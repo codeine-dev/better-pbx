@@ -1,11 +1,11 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: not_started
-owner: null
-branch: null
+status: in_progress
+owner: opencode
+branch: main
 depends_on: [1]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-06T23:44:57Z"
 blocked_reason: null
 ---
 

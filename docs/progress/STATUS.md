@@ -4,11 +4,11 @@
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
 **Overall:** 2/10 phases done · 13/72 tasks done
-**Last phase update:** 2026-11-06T00:58:39Z
+**Last phase update:** 2026-11-06T23:44:57Z
 
 ## Current focus
 
-- No phase is currently in progress.
+- [Phase 2](phases/02-config-engine.md) — Configuration model and renderer — owner: `opencode`
 
 ## Phases
 
@@ -16,7 +16,7 @@
 | --- | --- | --- | --- | --- | --- |
 | [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | ✔ done | opencode | 8/8 | 0 | 2026-11-06T00:58:39Z |
-| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
+| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ◐ in_progress | opencode | 0/8 | 1 | 2026-11-06T23:44:57Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
 | [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
 | [Phase 5](phases/05-core-crud.md) — Extensions, trunks, and outbound routing | · not_started | — | 0/6 | 2, 3, 4 | 2026-11-05T00:00:00Z |
@@ -27,7 +27,9 @@
 
 ## Active claims
 
-_None._
+| Task | Phase | Agent | Started | Lease until | Note |
+| --- | --- | --- | --- | --- | --- |
+| P2-01 | 2 | opencode | 2026-11-06T23:44:57Z | 2026-11-07T07:44:57Z | phase 2: shared Zod model, destinations, defaults, migration hook |
 
 ## Blocked
 
@@ -35,7 +37,13 @@ _None._
 
 ## Ready to claim
 
-_None._
+- **P2-02** — Implement deterministic renderers for every file in `PLAN.md` §3.2 (`asterisk.conf`, `pjsip.conf`, `extensions.conf`, `queues.conf`, `voicemail.conf`, `logger.conf`, `rtp.conf`, `indications.conf`, `features.conf`, `modules.conf`, `cdr.conf`, `musiconhold.conf`, fail2ban config). _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-03** — Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-04** — Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-05** — Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-06** — Create the complete golden fixture covering every feature and snapshot every rendered file. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-07** — Add unit tests for defaults, validation failures, dangerous patterns, ACL ordering, and secret generation. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
+- **P2-08** — Implement the temporary-Asterisk validator (alternate ports, temp dirs) and use it in the golden test. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
 
 ## Recent worklog
 
