@@ -23,6 +23,12 @@
     "skipLibCheck": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@better-pbx/shared": ["packages/shared/src/index.ts"],
+      "@better-pbx/config-engine": ["packages/config-engine/src/index.ts"],
+      "@better-pbx/test-fixtures": ["packages/test-fixtures/src/index.ts"]
+    }
   }
 }

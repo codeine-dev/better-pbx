@@ -1,5 +1,5 @@
 /**
  * The config engine is a pure package: it validates a model and renders Asterisk files without
- * touching the filesystem. The implementation lands in Phase 2.
+ * touching the filesystem. The throwaway-Asterisk validator lives in a separate entry point.
  */
-export const CONFIG_ENGINE_NAME = '@better-pbx/config-engine';
+export * from './render/index.js';

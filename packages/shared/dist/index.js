@@ -1,8 +1,9 @@
-import { z } from 'zod';
-/**
- * The on-disk configuration schema version. The API and the UI share this value so a model written
- * by one can always be validated by the other.
- */
-export const CONFIG_SCHEMA_VERSION = 1;
-export const schemaVersionSchema = z.literal(CONFIG_SCHEMA_VERSION);
+export * from './defaults.js';
+export * from './destinations.js';
+export * from './migration.js';
+export * from './model.js';
+export * from './primitives.js';
+export * from './random.js';
+export * from './resources.js';
+export * from './settings.js';
 //# sourceMappingURL=index.js.map
