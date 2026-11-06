@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Test output
+playwright-report/
+test-results/
+blob-report/
+
+# Local data, runtime state, and the SQLite database
+/data/
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+secrets/
+setup-token
+internal-token
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Packaging artifacts
+*.tgz
+*.tar.gz

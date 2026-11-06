@@ -1,0 +1,19 @@
+# Keep the build context small and free of local state or secrets.
+.git
+.gitignore
+.github
+node_modules
+**/node_modules
+**/dist
+**/coverage
+**/.vite
+**/playwright-report
+**/test-results
+data
+docs
+*.md
+.env
+.env.*
+!.env.example
+secrets
+*.log

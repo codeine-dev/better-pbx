@@ -8,13 +8,13 @@
 
 ## Current focus
 
-- Next ready phase: [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions
+- [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions — owner: `opencode`
 
 ## Phases
 
 | Phase | Status | Owner | Tasks | Depends on | Updated |
 | --- | --- | --- | --- | --- | --- |
-| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 3/5 | — | 2026-11-06T00:10:27Z |
+| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ◐ in_progress | opencode | 3/5 | — | 2026-11-06T00:10:27Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
@@ -27,7 +27,9 @@
 
 ## Active claims
 
-_None._
+| Task | Phase | Agent | Started | Lease until | Note |
+| --- | --- | --- | --- | --- | --- |
+| P0-05 | 0 | opencode | 2026-11-06T00:10:27Z | 2026-11-06T08:10:27Z | repository hygiene files |
 
 ## Blocked
 
@@ -36,7 +38,6 @@ _None._
 ## Ready to claim
 
 - **P0-03** — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
-- **P0-05** — Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
 
 ## Recent worklog
 
