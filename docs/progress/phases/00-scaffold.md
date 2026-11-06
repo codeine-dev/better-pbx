@@ -3,9 +3,9 @@ phase: 0
 title: Repository scaffold and decisions
 status: ready
 owner: null
-branch: null
+branch: main
 depends_on: []
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-06T00:08:04Z"
 blocked_reason: null
 ---
 
@@ -17,7 +17,7 @@ Turn the greenfield repository into a working TypeScript monorepo with one comma
 
 ## Tasks
 
-- [ ] **P0-01** Write `README.md` skeleton and `docs/adr/0001-architecture.md` (condensed from `PLAN.md`).
+- [x] **P0-01** Write `README.md` skeleton and `docs/adr/0001-architecture.md` (condensed from `PLAN.md`).
 - [ ] **P0-02** Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest.
 - [ ] **P0-03** Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts.
 - [ ] **P0-04** Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow.
