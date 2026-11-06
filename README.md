@@ -4,8 +4,9 @@ BetterPBX is a self-contained PBX appliance: Asterisk 22 LTS, a hardened configu
 React admin UI in a single Docker image. All persistent state lives under `/data`, and every
 successful configuration change is snapshotted as a Git commit with diff and rollback.
 
-> Status: Phase 0 (repository scaffold). The application is not runnable yet; the first working
-> vertical slice is the Phase 1 runtime image. See [`PLAN.md`](PLAN.md) for the phase map.
+> Status: Phase 1 (Asterisk runtime image and boot). The container boots Asterisk 22 LTS,
+> fail2ban, and a placeholder API under s6 with persistent `/data`. The configuration model,
+> renderer, and setup wizard arrive in Phases 2–4. See [`PLAN.md`](PLAN.md) for the phase map.
 
 ## Goals
 
@@ -18,20 +19,77 @@ successful configuration change is snapshotted as a Git commit with diff and rol
   restricted codecs, fail2ban always enabled, and enforced whitelist/blacklist.
 - **One image.** `s6-overlay` supervises Asterisk, the API, and fail2ban.
 
-## Quick start (development)
+## Quick start (container)
 
 Prerequisites:
 
-- Node.js 24+
-- pnpm 10 (`corepack enable` is the recommended way to get the pinned version)
+- Docker with BuildKit
+- Ports 5060/udp, 5061/tcp, 8080/tcp, and 10000–20000/udp available on the host
+
+Build and run the Phase 1 runtime image:
+
+```sh
+docker build -t better-pbx:dev .
+docker run --name better-pbx --network=host -v better-pbx:/data better-pbx:dev
+```
+
+The image is deliberately run with `--network=host` so SIP and RTP use predictable ports rather
+than a large Docker port mapping. Watch the first boot:
+
+```sh
+docker logs -f better-pbx
+```
+
+The log contains `FIRST-RUN SETUP CODE: ....` (also stored at `/data/setup-token`). Enter that code
+when the setup wizard lands in Phase 4. The token is removed after setup and survives container
+restarts until then. For automated provisioning, set `PBX_SETUP_TOKEN` on the first run.
+
+The placeholder API exposes:
+
+- `GET /api/health`
+- `GET /api/setup/status`
+- `GET /`
+
+Asterisk is configured with UDP and TLS transports but **no endpoints**, so it accepts no calls
+until configuration exists. AMI, ARI, and Asterisk's internal HTTP server are disabled.
+
+Useful checks:
+
+```sh
+docker exec better-pbx asterisk -rx 'core show version'
+docker exec better-pbx fail2ban-client status
+curl http://127.0.0.1:8080/api/health
+```
+
+### Persistent data
+
+All mutable state lives under `/data`:
+
+```
+/data
+├── config/          Git repository: pbx.yaml and the rendered Asterisk tree
+├── voicemail/       voicemail spool
+├── sounds/          uploaded prompts (custom sound directory)
+├── runtime/         tokens, TLS material, generated PJSIP ACL
+├── log/             messages, security log for fail2ban, CDR CSV
+└── fail2ban/        fail2ban state
+```
+
+`/etc/asterisk` is a symlink to `/data/config/asterisk`, and the bootstrap configuration is
+committed to `/data/config` on first boot. Restarting the container against the same volume never
+overwrites the operator's model, TLS material, tokens, or Git history.
+
+### Development shell
+
+The Node.js monorepo is still developing; the web shell is the only local dev server today:
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-`pnpm dev` currently starts the web shell on <http://localhost:5173>. The API dev server is added
-with the API core in Phase 3.
+`pnpm dev` starts the web shell on <http://localhost:5173>. The API dev server and configuration
+engine are added in Phases 2–3.
 
 ## Quality gates
 
@@ -54,7 +112,8 @@ node scripts/progress.mjs check
 | `pnpm test:e2e` | Playwright end-to-end tests (placeholder until Phase 4). |
 | `pnpm build` | Build every package and the static UI bundle. |
 | `pnpm format` / `pnpm format:check` | Apply or verify Prettier formatting. |
-| `pnpm docker:build` | Build the runtime image (available in Phase 1). |
+| `pnpm docker:build` | Build the runtime image. |
+| `scripts/smoke-container.sh` | Build, boot, health-check, restart, and gracefully stop the container. |
 | `pnpm dev` | Run local development servers. |
 
 ## Progress tracker

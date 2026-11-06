@@ -1,0 +1,3 @@
+#!/bin/sh
+# Asterisk runs in the foreground under s6 and drops privileges to asterisk:pbx.
+exec s6-setuidgid asterisk /usr/sbin/asterisk -f -C /etc/asterisk/asterisk.conf

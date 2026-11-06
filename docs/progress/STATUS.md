@@ -4,18 +4,18 @@
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
 **Overall:** 1/10 phases done · 5/72 tasks done
-**Last phase update:** 2026-11-06T00:11:17Z
+**Last phase update:** 2026-11-06T00:16:23Z
 
 ## Current focus
 
-- No phase is currently in progress.
+- [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot — owner: `opencode`
 
 ## Phases
 
 | Phase | Status | Owner | Tasks | Depends on | Updated |
 | --- | --- | --- | --- | --- | --- |
 | [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
-| [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
+| [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | ◐ in_progress | opencode | 0/8 | 0 | 2026-11-06T00:16:23Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
 | [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
@@ -27,7 +27,9 @@
 
 ## Active claims
 
-_None._
+| Task | Phase | Agent | Started | Lease until | Note |
+| --- | --- | --- | --- | --- | --- |
+| P1-01 | 1 | opencode | 2026-11-06T00:16:23Z | 2026-11-06T08:16:23Z | Phase 1: build pinned Asterisk 22.12.0 runtime image, s6 services, bootstrap config, and smoke test |
 
 ## Blocked
 
@@ -35,7 +37,13 @@ _None._
 
 ## Ready to claim
 
-_None._
+- **P1-02** — Install core/extra sound packs (English by default; add other languages where packages exist), MOH, and verify paths. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-03** — Implement the s6 one-shot init: `/data` layout, `pbx`/`asterisk` users and groups, permissions, timezone, self-signed SIP TLS material, bootstrap model, Git init. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-04** — Write the static bootstrap Asterisk config: UDP/TLS transports, no endpoints, safe modules, disabled AMI/ARI/HTTP, security log, fail2ban baseline. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-05** — Add s6 services for Asterisk, fail2ban, and the placeholder API; define dependencies and restart behavior. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-06** — Add container healthcheck, stdout logging, graceful shutdown, and a clear first-boot setup-code message. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-07** — Write `scripts/smoke-container.sh` to build, run with a temporary `/data`, wait for health, and assert Asterisk/fail2ban/API. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
+- **P1-08** — Run the container smoke test, including a restart against the same `/data`, and record the result in the worklog/handoff. _([Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot)_
 
 ## Recent worklog
 

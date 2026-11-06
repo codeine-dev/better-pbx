@@ -1,11 +1,11 @@
 ---
 phase: 1
 title: Asterisk runtime image and boot
-status: not_started
-owner: null
-branch: null
+status: in_progress
+owner: opencode
+branch: main
 depends_on: [0]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-06T00:16:23Z"
 blocked_reason: null
 ---
 
@@ -42,7 +42,11 @@ Prove the highest-risk integration first: one image that boots Asterisk 22 LTS, 
 docker build -t better-pbx:dev .
 scripts/smoke-container.sh
 docker run --rm --network=host -v /tmp/pbx:/data better-pbx:dev \
-  sh -c 'asterisk -rx "core show version" && fail2ban-client status'
+  sh -c 'for i in $(seq 1 90); do
+           asterisk -rx "core show version" && fail2ban-client status && exit 0
+           sleep 2
+         done
+         exit 1'
 node scripts/progress.mjs check
 ```
 

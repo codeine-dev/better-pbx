@@ -1,0 +1,5 @@
+#!/bin/sh
+# fail2ban runs as root (to read the security log and the internal token) but its ban
+# action is an unprivileged loopback API call, so no extra container capabilities are needed.
+mkdir -p /run/fail2ban
+exec /usr/bin/fail2ban-server -f -x

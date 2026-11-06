@@ -1,0 +1,45 @@
+# BetterPBX bootstrap model.
+#
+# This is the safe, empty source of truth written on the first boot. Phase 2 replaces these
+# hand-written defaults with the typed schema and renderer. Secrets are never present here.
+schemaVersion: 1
+meta:
+  pbxName: BetterPBX
+  createdAt: __CREATED_AT__
+  updatedAt: __CREATED_AT__
+settings:
+  region:
+    country: US
+    timezone: UTC
+    language: en
+    emergencyNumbers: ['911']
+    nationalPrefix: '1'
+    internationalPrefix: '011'
+    outsidePrefix: '9'
+  network:
+    externalAddress: null
+    localNetworks: []
+    sipPort: 5060
+    tlsPort: 5061
+    rtpStart: 10000
+    rtpEnd: 20000
+    tlsEnabled: true
+  security:
+    fail2ban:
+      maxRetry: 5
+      findTime: 600
+      banTime: 3600
+      increment: false
+    whitelist: []
+    blacklist: []
+  voicemail:
+    maxMessages: 100
+    maxSeconds: 180
+    defaultPinLength: 4
+extensions: []
+trunks: []
+outboundRoutes: []
+inboundRoutes: []
+ringGroups: []
+ivrs: []
+prompts: []

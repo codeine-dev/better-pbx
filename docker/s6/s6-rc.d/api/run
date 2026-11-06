@@ -1,0 +1,3 @@
+#!/bin/sh
+# The API runs as pbx:pbx. Node handles SIGTERM and closes Fastify before exiting.
+exec s6-setuidgid pbx /usr/local/bin/node /opt/better-pbx/api/dist/index.js

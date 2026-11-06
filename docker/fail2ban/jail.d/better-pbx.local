@@ -1,0 +1,21 @@
+[DEFAULT]
+backend = polling
+banaction = pbx-ban
+banaction_allports = pbx-ban
+bantime = 3600
+findtime = 600
+maxretry = 5
+ignoreip = 127.0.0.1/8 ::1
+
+[better-pbx]
+enabled = true
+filter = asterisk-security
+logpath = /data/log/security
+maxretry = 5
+findtime = 600
+bantime = 3600
+
+; The appliance image does not run sshd. Explicitly disable distro default jails so only the
+; Asterisk security jail is active.
+[sshd]
+enabled = false

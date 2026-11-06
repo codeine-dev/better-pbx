@@ -1,0 +1,53 @@
+#!/bin/sh
+# BetterPBX fail2ban ban helper.
+#
+# fail2ban runs as root but must not require NET_ADMIN. Ban and unban actions therefore
+# call the local API, which owns the runtime PJSIP ACL. A failed API call is logged but does
+# not crash fail2ban; the API also sweeps expired bans in case a callback is missed.
+set -u
+
+action="${1:-}"
+ip="${2:-}"
+
+if [ -z "$action" ] || [ -z "$ip" ]; then
+  echo "usage: pbx-ban <ban|unban> <ip>" >&2
+  exit 2
+fi
+
+token_file="${PBX_INTERNAL_TOKEN_FILE:-/data/runtime/internal-token}"
+api_url="${PBX_INTERNAL_URL:-http://127.0.0.1:8080}"
+
+case "$action" in
+  ban)
+    method="POST"
+    endpoint="/internal/bans"
+    ;;
+  unban)
+    method="DELETE"
+    endpoint="/internal/bans/$ip"
+    ;;
+  *)
+    echo "pbx-ban: unknown action: $action" >&2
+    exit 2
+    ;;
+esac
+
+if [ ! -r "$token_file" ]; then
+  logger -t pbx-ban "cannot read ${token_file}; ${action} ${ip} was not sent to the API" 2>/dev/null || true
+  exit 0
+fi
+
+token="$(cat "$token_file")"
+
+if curl -fsS --max-time 5 -X "$method" \
+  -H "Authorization: Bearer ${token}" \
+  -H 'Content-Type: application/json' \
+  --data "{\"ip\":\"${ip}\"}" \
+  "${api_url}${endpoint}" >/dev/null; then
+  logger -t pbx-ban "applied ${action} for ${ip}" 2>/dev/null || true
+else
+  logger -t pbx-ban "API call failed for ${action} ${ip}; ban will be retried by fail2ban" 2>/dev/null || true
+fi
+
+# Always let fail2ban record its own state. The API sweep reconciles any missed callback.
+exit 0
