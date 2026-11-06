@@ -3,18 +3,18 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 0/10 phases done · 4/72 tasks done
-**Last phase update:** 2026-11-06T00:11:04Z
+**Overall:** 1/10 phases done · 5/72 tasks done
+**Last phase update:** 2026-11-06T00:11:17Z
 
 ## Current focus
 
-- Next ready phase: [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions
+- No phase is currently in progress.
 
 ## Phases
 
 | Phase | Status | Owner | Tasks | Depends on | Updated |
 | --- | --- | --- | --- | --- | --- |
-| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 4/5 | — | 2026-11-06T00:11:04Z |
+| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
@@ -35,7 +35,7 @@ _None._
 
 ## Ready to claim
 
-- **P0-03** — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+_None._
 
 ## Recent worklog
 
@@ -44,3 +44,4 @@ _None._
 - 2026-11-06T00:10:17Z — P0-03 — opencode — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. — commit: n/a — root scripts verified: lint, typecheck, test, build, test:e2e
 - 2026-11-06T00:10:27Z — P0-04 — opencode — Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow. — commit: n/a — CI runs install, lint, typecheck, test, build; progress workflow unchanged
 - 2026-11-06T00:11:04Z — P0-05 — opencode — Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored. — commit: 8f2e41c — gitignore, editorconfig, dockerignore; removed tracked node_modules/dist
+- 2026-11-06T00:11:17Z — P0-03 — opencode — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. — commit: b0a5c97 — scripts implemented and verified; tracker checkbox restored after a concurrent-write race
