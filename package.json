@@ -1,0 +1,15 @@
+{
+  "name": "better-pbx",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A PBX in a single Docker image with a modern web UI",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "progress": "node scripts/progress.mjs",
+    "progress:check": "node scripts/progress.mjs check",
+    "progress:render": "node scripts/progress.mjs render"
+  }
+}

@@ -1,0 +1,54 @@
+---
+phase: 2
+title: Configuration model and renderer
+status: not_started
+owner: null
+branch: null
+depends_on: [1]
+updated: 2026-11-05T00:00:00Z
+blocked_reason: null
+---
+
+# Phase 2 — Configuration model and renderer
+
+## Goal
+
+Build the pure TypeScript core that turns a validated model into deterministic, hardened Asterisk configuration. This is the heart of the product; no UI or API work should bypass it.
+
+## Tasks
+
+- [ ] **P2-01** Implement `packages/shared`: full Zod model, destination union, defaults for every resource, schema version and migration hook.
+- [ ] **P2-02** Implement deterministic renderers for every file in `PLAN.md` §3.2 (`asterisk.conf`, `pjsip.conf`, `extensions.conf`, `queues.conf`, `voicemail.conf`, `logger.conf`, `rtp.conf`, `indications.conf`, `features.conf`, `modules.conf`, `cdr.conf`, `musiconhold.conf`, fail2ban config).
+- [ ] **P2-03** Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation.
+- [ ] **P2-04** Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation.
+- [ ] **P2-05** Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations.
+- [ ] **P2-06** Create the complete golden fixture covering every feature and snapshot every rendered file.
+- [ ] **P2-07** Add unit tests for defaults, validation failures, dangerous patterns, ACL ordering, and secret generation.
+- [ ] **P2-08** Implement the temporary-Asterisk validator (alternate ports, temp dirs) and use it in the golden test.
+
+## Exit criteria
+
+- The complete fixture renders all expected files with no nondeterminism.
+- A deliberately unsafe model is rejected with actionable field-level errors.
+- The golden config starts in a throwaway Asterisk and reports the expected endpoints/dialplan.
+- `pnpm test` is green.
+- Renderer files are pure and contain no filesystem or process access.
+
+## Verification
+
+```sh
+pnpm test
+pnpm typecheck
+node scripts/progress.mjs check
+```
+
+## Notes / decisions
+
+- The renderer must never emit anonymous endpoints, catch-all outbound routes, or unauthenticated trunks.
+- `astspooldir=/data` is what places voicemail at `/data/voicemail`.
+- Runtime ban state is not part of the committed model; renderers accept it as a separate optional input.
+- Golden files are reviewed as code; a change to them is a product change.
+
+## Handoff
+
+- Add notes here if the phase is stopped mid-way.

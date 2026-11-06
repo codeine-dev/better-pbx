@@ -1,0 +1,46 @@
+# BetterPBX Progress
+
+> Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
+> Do not edit by hand. Run `node scripts/progress.mjs render`.
+
+**Overall:** 0/10 phases done · 0/72 tasks done
+**Last phase update:** 2026-11-05T00:00:00Z
+
+## Current focus
+
+- Next ready phase: [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions
+
+## Phases
+
+| Phase | Status | Owner | Tasks | Depends on | Updated |
+| --- | --- | --- | --- | --- | --- |
+| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 0/5 | — | 2026-11-05T00:00:00Z |
+| [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
+| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
+| [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
+| [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
+| [Phase 5](phases/05-core-crud.md) — Extensions, trunks, and outbound routing | · not_started | — | 0/6 | 2, 3, 4 | 2026-11-05T00:00:00Z |
+| [Phase 6](phases/06-telephony.md) — Inbound routing, ring groups, IVRs, and voicemail | · not_started | — | 0/7 | 2, 5 | 2026-11-05T00:00:00Z |
+| [Phase 7](phases/07-security.md) — Security operations (fail2ban, bans, audit) | · not_started | — | 0/8 | 3, 5 | 2026-11-05T00:00:00Z |
+| [Phase 8](phases/08-observability.md) — Snapshots UI, observability, and operations | · not_started | — | 0/7 | 5, 6, 7 | 2026-11-05T00:00:00Z |
+| [Phase 9](phases/09-release.md) — Hardening, end-to-end verification, and release | · not_started | — | 0/8 | 0, 1, 2, 3, 4, 5, 6, 7, 8 | 2026-11-05T00:00:00Z |
+
+## Active claims
+
+_None._
+
+## Blocked
+
+_None._
+
+## Ready to claim
+
+- **P0-01** — Write `README.md` skeleton and `docs/adr/0001-architecture.md` (condensed from `PLAN.md`). _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+- **P0-02** — Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+- **P0-03** — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+- **P0-04** — Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+- **P0-05** — Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
+
+## Recent worklog
+
+_No completed tasks yet._

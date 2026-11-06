@@ -303,141 +303,31 @@ Conventions: JSON, camelCase, Zod-validated bodies, ETag/`If-Match` on mutations
 
 ## 5. Step-by-Step Implementation
 
-Each phase ends with a working checkpoint, automated checks, and a commit. The plan is ordered to derisk Asterisk/Docker first, then build the product around a validated telephony core.
+Mutable task state lives in `docs/progress/`. This section is the stable map of phases and outcomes; the canonical checklists, exit criteria, verification commands, owners, claims, and handoffs are in the linked phase files. Do not put task checkboxes in this document.
 
-### Phase 0 — Repository scaffold and decisions
+| Phase | Outcome | Depends on | Canonical file |
+| --- | --- | --- | --- |
+| 0 | Repository scaffold, tooling, CI, architecture ADR | — | [`00-scaffold.md`](docs/progress/phases/00-scaffold.md) |
+| 1 | Asterisk 22 image boots under s6 with `/data`, fail2ban, health API | 0 | [`01-runtime.md`](docs/progress/phases/01-runtime.md) |
+| 2 | Typed model, security policy, deterministic renderers, golden fixtures | 1 | [`02-config-engine.md`](docs/progress/phases/02-config-engine.md) |
+| 3 | Secure API, apply pipeline, Git snapshots and rollback | 2 | [`03-api-core.md`](docs/progress/phases/03-api-core.md) |
+| 4 | Frontend shell, forced setup wizard, login, app primitives | 3 | [`04-frontend-shell.md`](docs/progress/phases/04-frontend-shell.md) |
+| 5 | Extensions, trunks, and outbound routing CRUD | 2, 3, 4 | [`05-core-crud.md`](docs/progress/phases/05-core-crud.md) |
+| 6 | Inbound routing, ring groups, IVRs, prompts, voicemail | 2, 5 | [`06-telephony.md`](docs/progress/phases/06-telephony.md) |
+| 7 | fail2ban operations, bans, PJSIP ACL, whitelist/blacklist, audit | 3, 5 | [`07-security.md`](docs/progress/phases/07-security.md) |
+| 8 | Snapshot UI, CDR and status, log viewer, backup/restore | 5, 6, 7 | [`08-observability.md`](docs/progress/phases/08-observability.md) |
+| 9 | Hardening, full Docker/SIP E2E, docs, release evidence | 0–8 | [`09-release.md`](docs/progress/phases/09-release.md) |
 
-- [ ] Write `README.md` skeleton and `docs/adr/0001-architecture.md` (condensed from this plan).
-- [ ] pnpm workspace, strict TypeScript, ESLint 9, Prettier, Vitest, Playwright config.
-- [ ] Root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`.
-- [ ] CI workflow running install, lint, typecheck, unit tests, build.
-- [ ] `.gitignore`, `.editorconfig`, `.dockerignore`.
+### Phase gates
 
-Exit: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` passes on an empty workspace; first feature commit is possible.
+Each phase ends with a working checkpoint, automated checks, and a commit. The verification commands for a phase are listed in its phase file and must pass before it is marked done (see `AGENTS.md` for the definition of done). Phases 1, 7, and 9 additionally require container/SIP or security smoke tests.
 
-### Phase 1 — Asterisk runtime image and boot (vertical slice)
+### Working agreement
 
-- [ ] Multi-stage Dockerfile: Debian 13 builder, pinned Asterisk 22.x, bundled pjproject/jansson, curated `menuselect.makeopts`; runtime with Node 24, s6-overlay 3, fail2ban, git, sox, openssl, tzdata, SQLite.
-- [ ] Install Asterisk core/extra sound packs (en by default; add others where packages exist) and MOH.
-- [ ] s6 init: create `/data` layout, users/groups, permissions, timezone, self-signed SIP TLS cert, bootstrap model, Git init.
-- [ ] Static bootstrap Asterisk config: transports, no endpoints, fail2ban, security logging, safe modules, disabled AMI/ARI/HTTP.
-- [ ] s6 services: Asterisk, fail2ban, placeholder API with `/api/health`.
-- [ ] Container healthcheck, graceful shutdown, log to stdout.
-- [ ] Makefile/script `scripts/smoke-container.sh`.
-
-Exit:
-
-- `docker build -t better-pbx:dev .` succeeds.
-- `docker run --network=host -v /tmp/pbx:/data better-pbx:dev` starts; `asterisk -rx "core show version"` works inside; `/api/health` returns OK; fail2ban is running; logs show the setup code.
-- Restarting the container reuses `/data` cleanly.
-
-### Phase 2 — Config engine
-
-- [ ] `packages/shared`: full Zod model, destination union, defaults for all resources, schema version/migration hook.
-- [ ] `packages/config-engine`: deterministic renderers for every file listed in §3.2.
-- [ ] Security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation.
-- [ ] Dialplan pattern parser/validator (`_N`, `_X`, `_Z`, `.`, `!`, ranges, literals), conflict and overlap detection, emergency-route generation.
-- [ ] Cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations.
-- [ ] Golden fixture: a complete model covering every feature; snapshot every rendered file.
-- [ ] Unit tests for defaults, validation failures, dangerous patterns, ACL ordering, secret generation.
-- [ ] Temporary-Asterisk validator helper (alternate ports, temporary directories) used by tests and later by the API.
-
-Exit: all golden files reviewed; `pnpm test` green; a deliberately unsafe model is rejected with actionable errors; the golden config starts in a throwaway Asterisk and reports endpoints/dialplan.
-
-### Phase 3 — API core, apply pipeline, snapshots
-
-- [ ] Fastify app, config, structured logging, error envelope, OpenAPI, static SPA fallback.
-- [ ] SQLite migrations for users, sessions, audit log, CDR index, meta.
-- [ ] Setup gate middleware, setup status, setup completion with token, admin creation, session login/logout, CSRF, rate limiting.
-- [ ] Git manager: init, commit, list, show, diff, restore, clean status; author from session; safe argument handling.
-- [ ] Apply pipeline (§3.3) with model lock, staging render, policy checks, atomic writes, reload classification, rollback on failure.
-- [ ] Asterisk CLI wrapper (`asterisk -C ... -rx`) and fail2ban wrapper, injectable for tests.
-- [ ] Internal ban endpoint and ban store with expiry sweeper.
-- [ ] Audit log for every mutation and rollback.
-- [ ] Integration tests with a fake Asterisk/fail2ban and a temp `/data`.
-
-Exit: API bootstraps a temp `/data`, completes setup, logs in, CRUDs a model, creates a Git commit, returns diff, rolls back, and enforces setup/auth/CSRF. No real Asterisk required for these tests.
-
-### Phase 4 — Frontend shell and setup wizard
-
-- [ ] Vite/React/Tailwind/shadcn base, router, query client, API client with CSRF/ETag handling.
-- [ ] Login page, auth guard, forced `/setup` redirect, setup-code step.
-- [ ] Multi-step wizard with detected defaults (timezone, locale, interfaces, emergency numbers, language) and "accept defaults".
-- [ ] App shell (sidebar, header, responsive nav, theme), dashboard skeleton with status cards and setup checklist.
-- [ ] Error/toast/dialog/table/form primitives; loading and empty states.
-- [ ] Playwright: first-run setup, validation errors, login, logout.
-
-Exit: with a real container, a fresh volume can be set up end to end in the browser; no API endpoint other than setup/health is reachable before setup.
-
-### Phase 5 — Extensions, trunks, and outbound routing
-
-- [ ] Extensions UI/API: number, name, codecs, secret generate/reveal-once/reset, transport, NAT, max contacts, voicemail fields, enable/disable.
-- [ ] Trunks UI/API: registration vs IP auth, provider CIDRs, transport, TLS/SRTP, codecs, caller ID, from user/domain, outbound proxy.
-- [ ] Outbound routes UI/API: patterns, strip/prepend, caller ID, trunk selection, premium/unsafe confirmation, emergency route setting.
-- [ ] Apply/reload feedback, conflict warnings, delete guards for referenced resources.
-- [ ] Dashboard checklist updates as resources are added.
-- [ ] Golden + integration tests for create/edit/delete and rendered output.
-
-Exit: create extension 101, trunk, and a `_9NXXXXXX` route in the UI; rendered `pjsip.conf`/`extensions.conf` load in Asterisk; snapshot created; deleting the trunk is blocked while a route uses it.
-
-### Phase 6 — Inbound routing, ring groups, IVRs, voicemail
-
-- [ ] Inbound routes UI/API with DID/pattern matching, optional trunk filter, destination picker, caller-ID filter.
-- [ ] Ring groups: number, strategy, members, ring time, no-answer destination; generate queues.
-- [ ] IVRs: greeting, timeout/retries, digit options, invalid/timeout destinations, direct dial; cycle detection.
-- [ ] Prompt management: built-in prompt browser/preview, upload, sox conversion to 8 kHz mono WAV, safe paths, duration/size limits.
-- [ ] Voicemail: per-extension mailbox/PIN/MWI, `*97`/`*98`, spool at `/data/voicemail`, message counts in UI.
-- [ ] Feature codes: voicemail, call pickup; documented and tested.
-- [ ] Renderer integration test for a full PBX with all features.
-
-Exit: a complete fixture starts in Asterisk with no config errors; inbound DID reaches extension/ring group/IVR; IVR digit routes; unanswered call reaches voicemail; message appears under `/data/voicemail`; MWI is configured.
-
-### Phase 7 — Security operations (fail2ban, bans, audit)
-
-- [ ] Generate fail2ban jail/filter/action from settings; custom `pbx-ban` action calling the internal API.
-- [ ] Runtime PJSIP ACL include: whitelist permits, manual/automatic denies, allow-all fallback; PJSIP reload on change.
-- [ ] Bans API/UI: live bans, source, jail, expiry, unban, manual blacklist, whitelist override, fail2ban status.
-- [ ] Security page: fail2ban tuning, whitelist/blacklist CRUD with CIDR validation and conflict rejection, login lockout, security audit checks.
-- [ ] Expiry sweeper and startup reconciliation with fail2ban state.
-- [ ] Optional nftables bans when `NET_ADMIN` is present and enabled.
-- [ ] Audit log UI (who changed what, when, snapshot SHA).
-- [ ] Tests: synthetic security log lines, regex check, real fail2ban ban/unban, ACL reload, whitelist prevents ban, blacklist forces ban.
-
-Exit: inject failed registrations; fail2ban bans the IP; the IP appears in the UI; the ACL blocks it; unban clears both; whitelisting an IP immediately unbans it and prevents re-ban; blacklisting forces a ban even when fail2ban is idle.
-
-### Phase 8 — Snapshots UI, observability, operations
-
-- [ ] Snapshot timeline, commit detail, unified diff, rollback and undo-last with confirmations; "configuration drift" indicator.
-- [ ] CDR ingestion from Asterisk CSV, recent-calls table, call duration/disposition.
-- [ ] Registrations, active calls, queue status, voicemail counts, uptime, disk usage, service health.
-- [ ] Log viewer for messages/security with filters and bounded tail.
-- [ ] Pending-restart banner and "apply when idle".
-- [ ] Backup/restore docs and scripts (config Git bundle + voicemail + DB).
-- [ ] Playwright snapshot/rollback and security flows.
-
-Exit: make a change, view the diff, roll back, and see Asterisk reload; recent calls and registrations populate; logs are viewable without exposing arbitrary files.
-
-### Phase 9 — Hardening, end-to-end, release
-
-- [ ] CSP and all security headers verified; cookies Secure when TLS terminates; no secrets in API responses/logs.
-- [ ] Container hardening: run services as dedicated users, `cap_drop: ALL` by default, read-only root-fs support, tmpfs where needed, no shell endpoints.
-- [ ] Full E2E in Docker: clean volume -> setup -> extension/trunk/route -> SIP REGISTER with sipp -> call flow -> voicemail -> snapshot rollback -> fail2ban ban/unban.
-- [ ] Optional SIP smoke test script using sipp/pjsua; documented.
-- [ ] Image size/build-time check; dependency and container scan.
-- [ ] README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, limitations.
-- [ ] Upgrade path: schema migrations, renderer version, image tag strategy.
-- [ ] Final `IMPLEMENTATION.md` with verification results and known limitations.
-
-Exit (whole project acceptance):
-
-1. `docker build -t better-pbx .` succeeds and the image runs with the documented one-liner.
-2. Fresh volume forces the setup wizard; setup code is required; only the admin password has no default.
-3. A softphone can register with the configured codecs; outbound, inbound, IVR, ring group, and voicemail all work.
-4. Voicemail is stored under `/data/voicemail` and survives container replacement.
-5. Every change produces a snapshot; diff and rollback work.
-6. Failed registrations trigger fail2ban and a working SIP-layer ban; whitelist/blacklist work as described.
-7. Lint, typecheck, unit, integration, Playwright, Docker smoke, and SIP smoke pass.
-8. Docs cover deployment, security, backup, and recovery.
+- The lead agent may add tasks to a phase file with the next free ID; agents may not delete or renumber tasks.
+- One task, one claim, one writer per file. See `docs/progress/README.md`.
+- If a decision changes, update this plan and add an ADR under `docs/adr/`; do not leave it only in chat.
+- Security invariants are never traded away to make a gate pass.
 
 ## 6. Test Strategy
 
@@ -478,7 +368,7 @@ When implementation starts:
 
 1. Execute phases in order. Do not ask for confirmation on decisions already made here.
 2. At each phase boundary run `pnpm lint && pnpm typecheck && pnpm test && pnpm build`; for Docker phases also run the container smoke test.
-3. Commit each phase with a descriptive message; keep `PLAN.md` checkboxes updated.
+3. Commit each phase with a descriptive message; update `docs/progress/` through `scripts/progress.mjs` (claim, done, render) instead of editing checkboxes in this document.
 4. Never weaken a security invariant to make a test pass. If a requirement conflicts, stop and record it in `IMPLEMENTATION.md`.
 5. Use `/tmp/opencode` or `/tmp/pbx-*` for throwaway data; never delete a user's real `/data`.
 6. If Docker/Asterisk is unavailable, implement against injected fakes, leave the exact verification command, and mark the phase `implemented, needs environment verification`.
