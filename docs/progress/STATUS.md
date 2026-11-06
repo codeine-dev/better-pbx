@@ -3,8 +3,8 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 0/10 phases done · 1/72 tasks done
-**Last phase update:** 2026-11-06T00:08:04Z
+**Overall:** 0/10 phases done · 2/72 tasks done
+**Last phase update:** 2026-11-06T00:09:41Z
 
 ## Current focus
 
@@ -14,7 +14,7 @@
 
 | Phase | Status | Owner | Tasks | Depends on | Updated |
 | --- | --- | --- | --- | --- | --- |
-| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 1/5 | — | 2026-11-06T00:08:04Z |
+| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 2/5 | — | 2026-11-06T00:09:41Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
@@ -35,7 +35,6 @@ _None._
 
 ## Ready to claim
 
-- **P0-02** — Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
 - **P0-03** — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
 - **P0-04** — Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
 - **P0-05** — Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored. _([Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions)_
@@ -43,3 +42,4 @@ _None._
 ## Recent worklog
 
 - 2026-11-06T00:08:04Z — P0-01 — opencode — Write `README.md` skeleton and `docs/adr/0001-architecture.md` (condensed from `PLAN.md`). — commit: n/a — README skeleton and architecture ADR
+- 2026-11-06T00:09:41Z — P0-02 — opencode — Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest. — commit: n/a — pnpm workspace, strict TS, package layout, ESLint 9, Prettier, Vitest

@@ -134,7 +134,7 @@ function stringifyValue(value) {
   const string = String(value).replace(/\r?\n/g, ' ');
   if (
     string === '' ||
-    /[:#\[\]{}]/.test(string) ||
+    /[:#{}[\]]/.test(string) ||
     /^\s|\s$/.test(string) ||
     string.startsWith('"') ||
     string.startsWith("'")
@@ -282,9 +282,7 @@ function renderStatusText() {
   const claims = loadClaims().sort((a, b) =>
     String(a.data.task).localeCompare(String(b.data.task)),
   );
-  const phaseMap = new Map(phases.map((phase) => [Number(phase.data.phase), phase]));
-  const taskMap = new Map();
-  for (const phase of phases) {
+  const taskMap = new Map();  for (const phase of phases) {
     for (const task of phase.tasks) taskMap.set(task.id, { phase, task });
   }
   const claimMap = new Map(claims.map((claim) => [claim.data.task, claim]));

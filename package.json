@@ -11,5 +11,15 @@
     "progress": "node scripts/progress.mjs",
     "progress:check": "node scripts/progress.mjs check",
     "progress:render": "node scripts/progress.mjs render"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.5",
+    "globals": "^16.5.0",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^3.2.7"
   }
 }
