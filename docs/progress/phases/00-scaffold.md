@@ -47,6 +47,9 @@ node scripts/progress.mjs check
 - `PLAN.md` is stable architecture; this file is the mutable checklist.
 - Do not add application features in this phase; only scaffolding and decisions.
 - The first real vertical slice is Phase 1.
+- Early scaffold commits accidentally tracked `node_modules/` and `dist/` before `.gitignore` existed. They
+  were removed from the index in P0-05. History was not rewritten, per `AGENTS.md`.
+- Root `pnpm dev` starts only the web shell until the API dev server lands in Phase 3.
 
 ## Handoff
 
