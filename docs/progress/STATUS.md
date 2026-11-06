@@ -3,18 +3,18 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 0/10 phases done · 3/72 tasks done
-**Last phase update:** 2026-11-06T00:10:27Z
+**Overall:** 0/10 phases done · 4/72 tasks done
+**Last phase update:** 2026-11-06T00:11:04Z
 
 ## Current focus
 
-- [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions — owner: `opencode`
+- Next ready phase: [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions
 
 ## Phases
 
 | Phase | Status | Owner | Tasks | Depends on | Updated |
 | --- | --- | --- | --- | --- | --- |
-| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ◐ in_progress | opencode | 3/5 | — | 2026-11-06T00:10:27Z |
+| [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ○ ready | — | 4/5 | — | 2026-11-06T00:11:04Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | · not_started | — | 0/8 | 0 | 2026-11-05T00:00:00Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | · not_started | — | 0/8 | 1 | 2026-11-05T00:00:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
@@ -27,9 +27,7 @@
 
 ## Active claims
 
-| Task | Phase | Agent | Started | Lease until | Note |
-| --- | --- | --- | --- | --- | --- |
-| P0-05 | 0 | opencode | 2026-11-06T00:10:27Z | 2026-11-06T08:10:27Z | repository hygiene files |
+_None._
 
 ## Blocked
 
@@ -45,3 +43,4 @@ _None._
 - 2026-11-06T00:09:41Z — P0-02 — opencode — Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest. — commit: n/a — pnpm workspace, strict TS, package layout, ESLint 9, Prettier, Vitest
 - 2026-11-06T00:10:17Z — P0-03 — opencode — Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts. — commit: n/a — root scripts verified: lint, typecheck, test, build, test:e2e
 - 2026-11-06T00:10:27Z — P0-04 — opencode — Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow. — commit: n/a — CI runs install, lint, typecheck, test, build; progress workflow unchanged
+- 2026-11-06T00:11:04Z — P0-05 — opencode — Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored. — commit: 8f2e41c — gitignore, editorconfig, dockerignore; removed tracked node_modules/dist

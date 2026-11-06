@@ -1,11 +1,11 @@
 ---
 phase: 0
 title: Repository scaffold and decisions
-status: in_progress
-owner: opencode
+status: ready
+owner: null
 branch: main
 depends_on: []
-updated: "2026-11-06T00:10:27Z"
+updated: "2026-11-06T00:11:04Z"
 blocked_reason: null
 ---
 
@@ -21,7 +21,7 @@ Turn the greenfield repository into a working TypeScript monorepo with one comma
 - [x] **P0-02** Create the pnpm workspace, strict TypeScript config, package layout (`apps/api`, `apps/web`, `packages/shared`, `packages/config-engine`, `packages/test-fixtures`), ESLint 9, Prettier, Vitest.
 - [ ] **P0-03** Add root scripts: `lint`, `typecheck`, `test`, `test:e2e`, `build`, `dev`, `docker:build`; keep the progress scripts.
 - [x] **P0-04** Add CI workflow for install, lint, typecheck, unit tests, and build; keep the progress workflow.
-- [ ] **P0-05** Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored.
+- [x] **P0-05** Add `.gitignore`, `.editorconfig`, and `.dockerignore`; ensure generated artifacts, local data, and secrets are ignored.
 
 ## Exit criteria
 
