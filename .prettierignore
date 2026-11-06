@@ -1,3 +1,6 @@
+**/*.md
+docs
+scripts
 **/dist
 **/coverage
 **/node_modules

@@ -8,6 +8,15 @@
     "node": ">=24"
   },
   "scripts": {
+    "dev": "pnpm --filter @better-pbx/web dev",
+    "build": "pnpm -r build",
+    "test": "vitest run",
+    "test:e2e": "node -e \"console.log('E2E tests are introduced in Phase 4; no tests to run yet.')\"",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docker:build": "docker build -t better-pbx:latest .",
     "progress": "node scripts/progress.mjs",
     "progress:check": "node scripts/progress.mjs check",
     "progress:render": "node scripts/progress.mjs render"

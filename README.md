@@ -30,9 +30,8 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the API and web dev servers once those packages exist. During Phase 0 the
-workspace is intentionally empty, so the command exits after reporting that no dev server is
-configured.
+`pnpm dev` currently starts the web shell on <http://localhost:5173>. The API dev server is added
+with the API core in Phase 3.
 
 ## Quality gates
 
@@ -50,10 +49,11 @@ node scripts/progress.mjs check
 | Script | Purpose |
 | --- | --- |
 | `pnpm lint` | ESLint 9 over every package. |
-| `pnpm typecheck` | Strict TypeScript check via project references. |
+| `pnpm typecheck` | Strict TypeScript check across every workspace package. |
 | `pnpm test` | Vitest unit tests. |
 | `pnpm test:e2e` | Playwright end-to-end tests (placeholder until Phase 4). |
 | `pnpm build` | Build every package and the static UI bundle. |
+| `pnpm format` / `pnpm format:check` | Apply or verify Prettier formatting. |
 | `pnpm docker:build` | Build the runtime image (available in Phase 1). |
 | `pnpm dev` | Run local development servers. |
 

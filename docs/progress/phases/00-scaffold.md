@@ -1,11 +1,11 @@
 ---
 phase: 0
 title: Repository scaffold and decisions
-status: ready
-owner: null
+status: in_progress
+owner: opencode
 branch: main
 depends_on: []
-updated: "2026-11-06T00:09:41Z"
+updated: "2026-11-06T00:10:17Z"
 blocked_reason: null
 ---
 
