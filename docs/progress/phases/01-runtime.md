@@ -1,11 +1,11 @@
 ---
 phase: 1
 title: Asterisk runtime image and boot
-status: in_progress
+status: done
 owner: opencode
 branch: main
 depends_on: [0]
-updated: "2026-11-06T00:16:23Z"
+updated: "2026-11-06T00:58:39Z"
 blocked_reason: null
 ---
 
@@ -17,14 +17,14 @@ Prove the highest-risk integration first: one image that boots Asterisk 22 LTS, 
 
 ## Tasks
 
-- [ ] **P1-01** Build the multi-stage Dockerfile: Debian 13 builder, pinned Asterisk 22.x with SHA-256, bundled pjproject/jansson, curated `menuselect.makeopts`; runtime with Node 24, s6-overlay 3, fail2ban, git, sox, openssl, tzdata, SQLite.
-- [ ] **P1-02** Install core/extra sound packs (English by default; add other languages where packages exist), MOH, and verify paths.
-- [ ] **P1-03** Implement the s6 one-shot init: `/data` layout, `pbx`/`asterisk` users and groups, permissions, timezone, self-signed SIP TLS material, bootstrap model, Git init.
-- [ ] **P1-04** Write the static bootstrap Asterisk config: UDP/TLS transports, no endpoints, safe modules, disabled AMI/ARI/HTTP, security log, fail2ban baseline.
-- [ ] **P1-05** Add s6 services for Asterisk, fail2ban, and the placeholder API; define dependencies and restart behavior.
-- [ ] **P1-06** Add container healthcheck, stdout logging, graceful shutdown, and a clear first-boot setup-code message.
-- [ ] **P1-07** Write `scripts/smoke-container.sh` to build, run with a temporary `/data`, wait for health, and assert Asterisk/fail2ban/API.
-- [ ] **P1-08** Run the container smoke test, including a restart against the same `/data`, and record the result in the worklog/handoff.
+- [x] **P1-01** Build the multi-stage Dockerfile: Debian 13 builder, pinned Asterisk 22.x with SHA-256, bundled pjproject/jansson, curated `menuselect.makeopts`; runtime with Node 24, s6-overlay 3, fail2ban, git, sox, openssl, tzdata, SQLite.
+- [x] **P1-02** Install core/extra sound packs (English by default; add other languages where packages exist), MOH, and verify paths.
+- [x] **P1-03** Implement the s6 one-shot init: `/data` layout, `pbx`/`asterisk` users and groups, permissions, timezone, self-signed SIP TLS material, bootstrap model, Git init.
+- [x] **P1-04** Write the static bootstrap Asterisk config: UDP/TLS transports, no endpoints, safe modules, disabled AMI/ARI/HTTP, security log, fail2ban baseline.
+- [x] **P1-05** Add s6 services for Asterisk, fail2ban, and the placeholder API; define dependencies and restart behavior.
+- [x] **P1-06** Add container healthcheck, stdout logging, graceful shutdown, and a clear first-boot setup-code message.
+- [x] **P1-07** Write `scripts/smoke-container.sh` to build, run with a temporary `/data`, wait for health, and assert Asterisk/fail2ban/API.
+- [x] **P1-08** Run the container smoke test, including a restart against the same `/data`, and record the result in the worklog/handoff.
 
 ## Exit criteria
 
