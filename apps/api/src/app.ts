@@ -945,7 +945,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const prompt = createPrompt({
       name,
       kind: 'custom',
-      file: `custom/${storedName}`,
+      file: `custom/${id}`,
       originalName,
       durationMs: 0,
     } as unknown as Parameters<typeof createPrompt>[0]);
@@ -972,8 +972,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete prompt', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
     // remove the underlying sound file for custom prompts
     if (prompt.kind === 'custom' && prompt.file.startsWith('custom/')) {
-      const soundPath = join(config.dataDir, 'sounds', prompt.file.slice('custom/'.length));
-      try { if (existsSync(soundPath)) rmSync(soundPath, { force: true }); } catch { void 0; }
+      const base = prompt.file.slice('custom/'.length);
+      const soundsDir = join(config.dataDir, 'sounds');
+      try {
+        for (const entry of readdirSync(soundsDir)) {
+          if (entry === base || entry.startsWith(base + '.')) {
+            rmSync(join(soundsDir, entry), { force: true });
+          }
+        }
+      } catch { void 0; }
     }
     recordAudit(db, { actor: user.username, action: 'delete-prompt', target: id, commitSha: result.commitSha });
     return { ok: true, commitSha: result.commitSha };

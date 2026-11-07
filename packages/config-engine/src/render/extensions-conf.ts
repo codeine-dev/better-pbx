@@ -122,13 +122,20 @@ function inboundEntries(
   return lines;
 }
 
+function promptSoundName(file: string): string {
+  // Asterisk resolves a sound by its base name and tries every registered format,
+  // so a stored file such as `custom/abc.wav` must be referenced as `custom/abc`.
+  // Keeping the extension makes Asterisk look for `custom/abc.wav.wav` and fail.
+  return file.replace(/\.(wav49|wav16|wav|gsm|ulaw|alaw|g722|mp3|ogg|flac|aac|m4a|aiff|au|wma|sln16|sln|pcm)$/i, '');
+}
+
 function ivrSections(ivr: Ivr, prompt: Prompt | undefined, lookup: ModelLookup): ConfigSection[] {
   if (prompt === undefined) throw new Error(`IVR ${ivr.id} references unknown prompt ${ivr.greetingPromptId}`);
 
   const sLines = [
     same('Answer()'),
     same('Set(RETRIES=0)'),
-    same(`Background(${prompt.file})`, 'retry'),
+    same(`Background(${promptSoundName(prompt.file)})`, 'retry'),
     same(`WaitExten(${ivr.timeoutSeconds})`),
     same('Set(RETRIES=$[${RETRIES}+1])'),
     same(`GotoIf($[${'${RETRIES}'} > ${ivr.maxRetries}]?${ivrContext(ivr.id)}-timeout,s,1)`),
