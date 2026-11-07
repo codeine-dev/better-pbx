@@ -73,6 +73,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   const startedAt = Date.now();
   const app = Fastify({ logger: options.logger ?? false });
+  let sipTraceEnabled = false;
 
   // helpers
   function setupRequiredNow(): boolean {
@@ -1036,14 +1037,85 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   app.get('/api/system/logs', async (req) => {
     requireAuth(req);
     const q = req.query as Record<string, string>;
-    const file = q.file === 'security' ? 'security' : 'messages';
-    const tail = Math.min(Number(q.tail ?? 200), 1000);
-    const logPath = join(config.dataDir, 'log', `${file}.log`);
+    const requested = String(q.file ?? 'messages').toLowerCase();
+    const aliasMap: Record<string, string> = {
+      messages: 'messages',
+      security: 'security',
+      sip: 'sip',
+      trace: 'sip',
+      siptrace: 'sip',
+      'sip-trace': 'sip',
+      sip_trace: 'sip',
+      full: 'full',
+    };
+    const file = aliasMap[requested] ?? 'messages';
+    const tail = Math.min(Math.max(Number(q.tail ?? 200), 1), 10000);
     const { existsSync, readFileSync } = await import('node:fs');
+    const logPath = join(config.dataDir, 'log', `${file}.log`);
+    if (!existsSync(logPath) && file === 'sip') {
+      // Fall back to the messages log, surfacing only SIP-related lines so traces are
+      // still visible when a dedicated sip.log has not been created yet.
+      const fallback = join(config.dataDir, 'log', 'messages.log');
+      if (existsSync(fallback)) {
+        const text = readFileSync(fallback, 'utf8');
+        const sipLines = text
+          .split('\\n')
+          .filter((line) => /sip|<---|received|sending|register/i.test(line));
+        return { lines: sipLines.slice(-tail) };
+      }
+    }
     if (!existsSync(logPath)) return { lines: [] };
     const text = readFileSync(logPath, 'utf8');
     const lines = text.split('\\n');
     return { lines: lines.slice(-tail) };
+  });
+
+  app.get('/api/system/sip-trace', async (req) => {
+    requireAuth(req);
+    return { enabled: sipTraceEnabled };
+  });
+
+  app.get('/api/system/trace', async (req) => {
+    requireAuth(req);
+    return { enabled: sipTraceEnabled };
+  });
+
+  app.post('/api/system/trace', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const body = (req.body as Record<string, unknown>) ?? {};
+    const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
+    sipTraceEnabled = enabled;
+    try {
+      if (enabled) {
+        asterisk.coreSetVerbose(5);
+        asterisk.pjsipSetLogger(true);
+      } else {
+        asterisk.pjsipSetLogger(false);
+      }
+    } catch {
+      void 0;
+    }
+    return { enabled: sipTraceEnabled };
+  });
+
+  app.post('/api/system/sip-trace', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const body = (req.body as Record<string, unknown>) ?? {};
+    const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
+    sipTraceEnabled = enabled;
+    try {
+      if (enabled) {
+        asterisk.coreSetVerbose(5);
+        asterisk.pjsipSetLogger(true);
+      } else {
+        asterisk.pjsipSetLogger(false);
+      }
+    } catch {
+      void 0;
+    }
+    return { enabled: sipTraceEnabled };
   });
 
   app.get('/api/system/queues', async (req) => {

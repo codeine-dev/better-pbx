@@ -3,8 +3,8 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 11/11 phases done · 86/86 tasks done
-**Last phase update:** 2026-11-07T11:21:01Z
+**Overall:** 12/12 phases done · 89/89 tasks done
+**Last phase update:** 2026-11-07T19:43:58Z
 
 ## Current focus
 
@@ -25,6 +25,7 @@
 | [Phase 8](phases/08-observability.md) — Snapshots UI, observability, and operations | ✔ done | opencode | 7/7 | 5, 6, 7 | 2026-11-07T01:07:37Z |
 | [Phase 9](phases/09-release.md) — Hardening, end-to-end verification, and release | ✔ done | opencode | 8/8 | 0, 1, 2, 3, 4, 5, 6, 7, 8 | 2026-11-07T01:08:27Z |
 | [Phase 10](phases/10-web-ui.md) — Web UI coverage, configuration depth, and console polish | ✔ done | opencode | 14/14 | 4, 5, 6, 7, 8 | 2026-11-07T11:21:01Z |
+| [Phase 11](phases/11-live-sip-tracing.md) — Live SIP tracing and log streaming in the Web UI | ✔ done | opencode | 3/3 | 8, 10 | 2026-11-07T19:43:58Z |
 
 ## Active claims
 
@@ -40,11 +41,11 @@ _None._
 
 ## Recent worklog
 
-- 2026-11-07T11:21:01Z — P10-07 — opencode — Inbound routes UI with DID, trunk filter, caller-ID filter, and a shared destination picker. — commit: 36719ad — implemented
-- 2026-11-07T11:21:01Z — P10-08 — opencode — Ring groups UI: number, strategy, members, ring time, no-answer destination. — commit: 36719ad — implemented
-- 2026-11-07T11:21:01Z — P10-09 — opencode — IVR UI: greeting prompt, timeout, retries, digit options, timeout/invalid destinations, direct dial, cycle validation. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-10 — opencode — Prompt management UI: browser, preview, upload with conversion status, delete. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-11 — opencode — Voicemail UI: per-extension PIN/email, message counts, MWI status. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-12 — opencode — Settings UI: region, network, security thresholds, whitelist/blacklist, voicemail limits. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-13 — opencode — Dashboard overview with resource counts, registration/health summaries, and quick actions. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-14 — opencode — Add Playwright coverage for the new configuration flows and the dark console shell. — commit: 36719ad — implemented
+- 2026-11-07T19:43:55Z — P11-01 — opencode — Render a dedicated `sip` log channel (verbose/debug) and add API control for the PJSIP logger (`pjsip set logger on/off`). — commit: e739371 — logger.conf sip channel; AsteriskCli + /api/system/sip-trace
+- 2026-11-07T19:43:56Z — P11-02 — opencode — Extend `/api/system/logs` to tail the SIP trace log (with a safe fallback to SIP-related messages lines) and bound the tail. — commit: e739371 — tail sip log with fallback
+- 2026-11-07T19:43:58Z — P11-03 — opencode — Rework the Logs page: SIP Traces tab, live polling, auto-scroll, and start/stop trace control. — commit: e739371 — Logs page SIP tab, live polling, auto-scroll

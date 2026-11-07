@@ -84,6 +84,9 @@ export const api = {
   unban: (ip: string) => apiFetch<{ ok: boolean }>(`/api/security/bans/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
   audit: () => apiFetch<Array<{ id: number; createdAt: string; actor: string; action: string; target: string | null; commitSha: string | null }>>('/api/audit'),
   logs: (file: string, tail = 200) => apiFetch<{ lines: string[] }>(`/api/system/logs?file=${encodeURIComponent(file)}&tail=${tail}`),
+  sipTraceStatus: () => apiFetch<{ enabled: boolean }>('/api/system/sip-trace'),
+  sipTraceToggle: (enabled: boolean) =>
+    apiFetch<{ enabled: boolean }>('/api/system/sip-trace', { method: 'POST', body: JSON.stringify({ enabled }) }),
   voicemailCounts: () => apiFetch<Record<string, number>>('/api/voicemail/counts'),
 
   extensions: () => apiFetch<Array<Omit<Extension, 'secret'>>>('/api/extensions'),

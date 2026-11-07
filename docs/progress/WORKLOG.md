@@ -90,3 +90,6 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T11:21:01Z — P10-12 — opencode — Settings UI: region, network, security thresholds, whitelist/blacklist, voicemail limits. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-13 — opencode — Dashboard overview with resource counts, registration/health summaries, and quick actions. — commit: 36719ad — implemented
 - 2026-11-07T11:21:01Z — P10-14 — opencode — Add Playwright coverage for the new configuration flows and the dark console shell. — commit: 36719ad — implemented
+- 2026-11-07T19:43:55Z — P11-01 — opencode — Render a dedicated `sip` log channel (verbose/debug) and add API control for the PJSIP logger (`pjsip set logger on/off`). — commit: e739371 — logger.conf sip channel; AsteriskCli + /api/system/sip-trace
+- 2026-11-07T19:43:56Z — P11-02 — opencode — Extend `/api/system/logs` to tail the SIP trace log (with a safe fallback to SIP-related messages lines) and bound the tail. — commit: e739371 — tail sip log with fallback
+- 2026-11-07T19:43:58Z — P11-03 — opencode — Rework the Logs page: SIP Traces tab, live polling, auto-scroll, and start/stop trace control. — commit: e739371 — Logs page SIP tab, live polling, auto-scroll

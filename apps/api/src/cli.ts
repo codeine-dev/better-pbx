@@ -57,6 +57,18 @@ export class AsteriskCli {
   ping(): CommandResult {
     return this.runner(this.binary, ['-rx', 'core show version'], { timeoutMs: 5000 });
   }
+
+  pjsipSetLogger(enabled: boolean): CommandResult {
+    return this.runner(this.binary, ['-rx', `pjsip set logger ${enabled ? 'on' : 'off'}`], { timeoutMs: 5000 });
+  }
+
+  coreSetVerbose(level: number): CommandResult {
+    return this.runner(this.binary, ['-rx', `core set verbose ${level}`], { timeoutMs: 5000 });
+  }
+
+  loggerReload(): CommandResult {
+    return this.runner(this.binary, ['-rx', 'module reload logger'], { timeoutMs: 5000 });
+  }
 }
 
 export class Fail2banCli {
