@@ -1,11 +1,11 @@
 ---
 phase: 3
 title: API core, apply pipeline, and snapshots
-status: in_progress
+status: done
 owner: opencode
 branch: main
 depends_on: [2]
-updated: "2026-11-07T00:49:22Z"
+updated: "2026-11-07T00:57:14Z"
 blocked_reason: null
 ---
 
@@ -17,15 +17,15 @@ Expose the config engine through a secure API, make every mutation transactional
 
 ## Tasks
 
-- [ ] **P3-01** Create the Fastify app with config, structured logging, error envelope, OpenAPI docs, and static SPA fallback.
-- [ ] **P3-02** Add SQLite migrations for users, sessions, audit log, CDR index, and meta; add a migration command.
-- [ ] **P3-03** Implement setup status/completion with the one-time setup code, admin creation, session login/logout, CSRF, login rate limiting, and the setup gate middleware.
-- [ ] **P3-04** Implement the Git manager: init, commit, list, show, diff, restore, clean status, session author, safe argument handling.
-- [ ] **P3-05** Implement the apply pipeline: model lock, staging render, policy checks, atomic writes, reload classification, failure rollback, audit, and commit.
-- [ ] **P3-06** Implement Asterisk and fail2ban CLI wrappers with timeouts, parsed output, and injectable runners for tests.
-- [ ] **P3-07** Implement the internal ban endpoint, ban store with expiry, and sweeper.
-- [ ] **P3-08** Implement the audit log for every mutation and rollback.
-- [ ] **P3-09** Add integration tests using a temp `/data` and fake command runners: setup gate, auth, CRUD, commit, diff, rollback, CSRF, stale-write handling.
+- [x] **P3-01** Create the Fastify app with config, structured logging, error envelope, OpenAPI docs, and static SPA fallback.
+- [x] **P3-02** Add SQLite migrations for users, sessions, audit log, CDR index, and meta; add a migration command.
+- [x] **P3-03** Implement setup status/completion with the one-time setup code, admin creation, session login/logout, CSRF, login rate limiting, and the setup gate middleware.
+- [x] **P3-04** Implement the Git manager: init, commit, list, show, diff, restore, clean status, session author, safe argument handling.
+- [x] **P3-05** Implement the apply pipeline: model lock, staging render, policy checks, atomic writes, reload classification, failure rollback, audit, and commit.
+- [x] **P3-06** Implement Asterisk and fail2ban CLI wrappers with timeouts, parsed output, and injectable runners for tests.
+- [x] **P3-07** Implement the internal ban endpoint, ban store with expiry, and sweeper.
+- [x] **P3-08** Implement the audit log for every mutation and rollback.
+- [x] **P3-09** Add integration tests using a temp `/data` and fake command runners: setup gate, auth, CRUD, commit, diff, rollback, CSRF, stale-write handling.
 
 ## Exit criteria
 
