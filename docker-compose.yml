@@ -1,0 +1,68 @@
+# BetterPBX — single-container PBX appliance.
+#
+# Quick start:
+#   docker compose up -d
+#   docker compose logs -f
+#
+# The first boot prints a one-time setup code (also stored in the volume at
+# /data/setup-token). Open http://<host>:8080 to run the setup wizard.
+#
+# Telephony needs host networking so SIP (5060/udp, 5061/tcp) and RTP
+# (10000-20000/udp) use predictable ports. Host networking is a Linux feature;
+# on Docker Desktop the container shares the VM network namespace.
+
+services:
+  better-pbx:
+    image: better-pbx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: better-pbx
+    restart: unless-stopped
+
+    # Host networking is required for SIP/RTP. Do not switch to bridge mode
+    # unless you also remap the full RTP range.
+    network_mode: host
+
+    volumes:
+      # All persistent state (config, voicemail, logs, fail2ban) lives here.
+      - better-pbx-data:/data
+
+    environment:
+      TZ: ${TZ:-UTC}
+      PBX_API_HOST: ${PBX_API_HOST:-0.0.0.0}
+      PBX_API_PORT: ${PBX_API_PORT:-8080}
+      # Optional: pin the first-run setup code for automated provisioning.
+      # PBX_SETUP_TOKEN: ${PBX_SETUP_TOKEN:-}
+
+    healthcheck:
+      test: ['CMD', '/usr/local/bin/node', '/opt/better-pbx/healthcheck.mjs']
+      interval: 15s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+
+    # Hardened runtime. Capabilities are dropped; the few the init process needs
+    # (chown/chmod during first boot) are added back. The root filesystem is
+    # kept writable because s6/Asterisk write to a handful of image paths at
+    # runtime; tighten with read_only + tmpfs if your platform supports it.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+      - SYS_NICE
+
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+
+volumes:
+  better-pbx-data:
+    name: better-pbx-data

@@ -33,6 +33,17 @@ docker build -t better-pbx:dev .
 docker run --name better-pbx --network=host -v better-pbx:/data better-pbx:dev
 ```
 
+Or use the included Compose file for the same setup with a persistent named volume:
+
+```sh
+docker compose up -d
+docker compose logs -f
+```
+
+The Compose file builds the image if it is missing, uses host networking for SIP/RTP, and keeps
+all state in the `better-pbx-data` volume. Set `PBX_SETUP_TOKEN` (and other variables) in a
+`.env` file next to `docker-compose.yml` for automated provisioning.
+
 The image is deliberately run with `--network=host` so SIP and RTP use predictable ports rather
 than a large Docker port mapping. Watch the first boot:
 
