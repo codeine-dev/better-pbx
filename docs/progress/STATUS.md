@@ -3,12 +3,12 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 2/10 phases done · 17/72 tasks done
-**Last phase update:** 2026-11-07T00:28:56Z
+**Overall:** 2/10 phases done · 18/72 tasks done
+**Last phase update:** 2026-11-07T00:32:00Z
 
 ## Current focus
 
-- [Phase 2](phases/02-config-engine.md) — Configuration model and renderer — owner: `opencode`
+- Next ready phase: [Phase 2](phases/02-config-engine.md) — Configuration model and renderer
 
 ## Phases
 
@@ -16,7 +16,7 @@
 | --- | --- | --- | --- | --- | --- |
 | [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | ✔ done | opencode | 8/8 | 0 | 2026-11-06T00:58:39Z |
-| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ◐ in_progress | opencode | 4/8 | 1 | 2026-11-07T00:28:56Z |
+| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ○ ready | — | 5/8 | 1 | 2026-11-07T00:32:00Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
 | [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
 | [Phase 5](phases/05-core-crud.md) — Extensions, trunks, and outbound routing | · not_started | — | 0/6 | 2, 3, 4 | 2026-11-05T00:00:00Z |
@@ -27,9 +27,7 @@
 
 ## Active claims
 
-| Task | Phase | Agent | Started | Lease until | Note |
-| --- | --- | --- | --- | --- | --- |
-| P2-05 | 2 | opencode | 2026-11-07T00:28:56Z | 2026-11-07T08:28:56Z | cross-resource validation: uniqueness, references, cycles, prompts, destinations |
+_None._
 
 ## Blocked
 
@@ -43,7 +41,6 @@ _None._
 
 ## Recent worklog
 
-- 2026-11-06T00:58:39Z — P1-05 — opencode — Add s6 services for Asterisk, fail2ban, and the placeholder API; define dependencies and restart behavior. — commit: 03e774b — s6 longrun services for asterisk, fail2ban and placeholder API with init-pbx dependency, restart behavior, and shutdown timeouts
 - 2026-11-06T00:58:39Z — P1-06 — opencode — Add container healthcheck, stdout logging, graceful shutdown, and a clear first-boot setup-code message. — commit: 03e774b — container healthcheck covers API/Asterisk/fail2ban; stdout logging, graceful SIGTERM shutdown, first-boot setup code in logs
 - 2026-11-06T00:58:39Z — P1-07 — opencode — Write `scripts/smoke-container.sh` to build, run with a temporary `/data`, wait for health, and assert Asterisk/fail2ban/API. — commit: 03e774b — scripts/smoke-container.sh builds and runs with temporary /data, waits for health, asserts services/config/ports, restarts, and checks graceful stop
 - 2026-11-06T00:58:39Z — P1-08 — opencode — Run the container smoke test, including a restart against the same `/data`, and record the result in the worklog/handoff. — commit: 03e774b — smoke test passed including restart persistence, setup gate, no AMI/ARI/HTTP listeners, and graceful shutdown exit 0; phase verification command passed
@@ -51,3 +48,4 @@ _None._
 - 2026-11-06T23:52:44Z — P2-02 — opencode — Implement deterministic renderers for every file in `PLAN.md` §3.2 (`asterisk.conf`, `pjsip.conf`, `extensions.conf`, `queues.conf`, `voicemail.conf`, `logger.conf`, `rtp.conf`, `indications.conf`, `features.conf`, `modules.conf`, `cdr.conf`, `musiconhold.conf`, fail2ban config). — commit: fe543ff — renderers for asterisk.conf, pjsip, extensions, queues, voicemail, logger, rtp, indications, features, modules, cdr, musiconhold, safety files and fail2ban; deterministic sorted tree; renderer tests green
 - 2026-11-07T00:26:01Z — P2-03 — opencode — Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation. — commit: 543822b — security policy: auth/trunk trust, codec/CIDR validation, catch-all and premium route rejection, secret strength, named acl.conf ACL with whitelist/blacklist/bans; renderSecure pipeline and rendered-config scan; 9 policy tests
 - 2026-11-07T00:28:56Z — P2-04 — opencode — Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation. — commit: 5028ebe — Asterisk pattern parser (X/Z/N, ranges, . and !, literals), catch-all classification, representative samples, outbound conflict detection, dedicated emergency-route generation; 10 dialplan tests
+- 2026-11-07T00:32:00Z — P2-05 — opencode — Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations. — commit: e8094c2 — validateModel/assertValidModel: schema migration, security policy, unique IDs/numbers/names, reference resolution, destination cycles, prompt existence, duplicate DIDs, pattern conflicts; 9 validation tests
