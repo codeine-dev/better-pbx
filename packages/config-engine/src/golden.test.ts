@@ -12,13 +12,24 @@ import { describe, expect, it } from 'vitest';
 
 import { buildCompleteModel } from '@better-pbx/test-fixtures';
 
+import { validateConfigWithAsterisk } from './asterisk-validator.js';
 import { renderSecure } from './render-secure.js';
+import type { RenderedTree } from './render/types.js';
 
 const GOLDEN_DIR = fileURLToPath(new URL('../../test-fixtures/golden/', import.meta.url));
 const UPDATE = process.env.PBX_UPDATE_GOLDEN === '1';
 
 function goldenRelative(key: string): string {
   return key.startsWith('/') ? key.replace(/^\/data\//, '') : key;
+}
+
+function goldenEntries(tree: RenderedTree): Record<string, string> {
+  return {
+    ...tree.files,
+    ...Object.fromEntries(
+      Object.entries(tree.runtimeFiles).map(([key, content]) => [goldenRelative(key), content]),
+    ),
+  };
 }
 
 function listFiles(dir: string, root: string): string[] {
@@ -32,18 +43,11 @@ function listFiles(dir: string, root: string): string[] {
   return result.sort((a, b) => a.localeCompare(b, 'en'));
 }
 
-function renderFixture(): Record<string, string> {
-  const model = buildCompleteModel();
-  const result = renderSecure({
-    model,
+function renderFixture(): RenderedTree {
+  return renderSecure({
+    model: buildCompleteModel(),
     runtime: { bannedCidrs: ['198.51.100.9/32'] },
   });
-  return {
-    ...result.files,
-    ...Object.fromEntries(
-      Object.entries(result.runtimeFiles).map(([key, content]) => [goldenRelative(key), content]),
-    ),
-  };
 }
 
 describe('golden configuration', () => {
@@ -66,7 +70,7 @@ describe('golden configuration', () => {
   });
 
   it('snapshots every rendered file', () => {
-    const rendered = renderFixture();
+    const rendered = goldenEntries(renderFixture());
     const expected = Object.keys(rendered).sort((a, b) => a.localeCompare(b, 'en'));
 
     if (UPDATE) {
@@ -94,6 +98,16 @@ describe('golden configuration', () => {
   });
 
   it('is stable across repeated renders', () => {
-    expect(renderFixture()).toEqual(renderFixture());
+    expect(goldenEntries(renderFixture())).toEqual(goldenEntries(renderFixture()));
+  });
+
+  it('starts the golden config in a throwaway Asterisk on alternate ports', async () => {
+    const report = await validateConfigWithAsterisk(renderFixture());
+    if (process.env.PBX_REQUIRE_ASTERISK_VALIDATION === '1') {
+      expect(report.status, report.reason ?? report.log).toBe('ok');
+    } else {
+      // CI without Docker reports 'unavailable'; a broken config must still fail here.
+      expect(report.status).not.toBe('failed');
+    }
   });
 });

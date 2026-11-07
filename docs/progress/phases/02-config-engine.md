@@ -1,11 +1,11 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: ready
-owner: null
+status: in_progress
+owner: opencode
 branch: main
 depends_on: [1]
-updated: "2026-11-07T00:35:46Z"
+updated: "2026-11-07T00:35:47Z"
 blocked_reason: null
 ---
 
@@ -51,6 +51,11 @@ node scripts/progress.mjs check
   `pnpm golden:update` and review the diff before committing.
 - Named PJSIP ACLs live in `asterisk/acl.conf` (included from `/data/runtime/pjsip-acl.conf`), not in
   `pjsip.conf`. Endpoints reference the ACL with `acl = global-acl`.
+- `pnpm validate:golden` materialises the golden tree in `/tmp/opencode/pbx-validator-*`, starts
+  Asterisk 22 from `better-pbx:dev` on alternate ports 15060/15061 with RTP 20000–20100, checks
+  endpoints and dialplan, runs `fail2ban-client -t`, and removes the container. Docker and the
+  built image are required for the real check; CI without them records `unavailable` instead of
+  failing the pure test suite.
 
 ## Handoff
 
