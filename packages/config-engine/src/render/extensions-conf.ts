@@ -186,6 +186,8 @@ function internalSection(model: PbxModel, lookup: ModelLookup): ConfigSection {
     same('Hangup()'),
     'exten => *98,1,VoiceMailMain()',
     same('Hangup()'),
+    'exten => *8,1,Pickup()',
+    same('Hangup()'),
     '',
     '; Extensions, ring groups, and IVRs use exact numbers.',
   ];
