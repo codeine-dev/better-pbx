@@ -1,11 +1,11 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: in_progress
-owner: opencode
+status: ready
+owner: null
 branch: main
 depends_on: [1]
-updated: "2026-11-07T00:32:00Z"
+updated: "2026-11-07T00:35:08Z"
 blocked_reason: null
 ---
 
@@ -22,7 +22,7 @@ Build the pure TypeScript core that turns a validated model into deterministic, 
 - [x] **P2-03** Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation.
 - [x] **P2-04** Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation.
 - [x] **P2-05** Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations.
-- [ ] **P2-06** Create the complete golden fixture covering every feature and snapshot every rendered file.
+- [x] **P2-06** Create the complete golden fixture covering every feature and snapshot every rendered file.
 - [ ] **P2-07** Add unit tests for defaults, validation failures, dangerous patterns, ACL ordering, and secret generation.
 - [ ] **P2-08** Implement the temporary-Asterisk validator (alternate ports, temp dirs) and use it in the golden test.
 
