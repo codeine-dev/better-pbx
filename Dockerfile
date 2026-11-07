@@ -205,6 +205,7 @@ RUN apt-get update \
         libuuid1 \
         libxml2 \
         libxslt1.1 \
+        libsox-fmt-all \
         openssl \
         procps \
         sox \

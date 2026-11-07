@@ -1,6 +1,6 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, extname } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import yaml from 'js-yaml';
 import { resolveConfig, type ApiConfig } from './config.js';
@@ -88,7 +88,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const resolvedMcpToken = readFileSync(mcpTokenPath, 'utf8').trim();
 
   const startedAt = Date.now();
-  const app = Fastify({ logger: options.logger ?? false });
+  const app = Fastify({ logger: options.logger ?? false, bodyLimit: 20 * 1024 * 1024 });
   let sipTraceEnabled = false;
 
   const mcpCtx: McpContext = {
@@ -888,23 +888,64 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const soundsDir = join(config.dataDir, 'sounds');
     mkdirSync(soundsDir, { recursive: true });
     const id = randomBytes(16).toString('hex');
-    const rawPath = join(soundsDir, `${id}.orig`);
-    const outPath = join(soundsDir, `${id}.wav`);
-    writeFileSync(rawPath, buf);
-    // convert via sox
-    const { execFileSync } = await import('node:child_process');
-    try {
-      execFileSync('sox', [rawPath, '-r', '8000', '-c', '1', outPath], { timeout: 30000 });
-    } catch {
-      // sox unavailable (tests): copy raw as wav
-      writeFileSync(outPath, buf);
+
+    // Preserve the original container format so sox/ffmpeg can identify the input
+    // (a generic `.orig` extension makes sox reject MP3 and other formats).
+    const allowedExts = new Set(['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.aiff', '.au', '.wma']);
+    let inputExt = extname(originalName).toLowerCase();
+    if (!allowedExts.has(inputExt)) {
+      // sniff a few common signatures when the name has no usable extension
+      if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'RIFF') inputExt = '.wav';
+      else if (buf.length >= 3 && buf.slice(0, 3).toString('ascii') === 'ID3') inputExt = '.mp3';
+      else if (buf.length >= 2 && buf[0] === 0xff && ((buf[1] ?? 0) & 0xe0) === 0xe0) inputExt = '.mp3';
+      else if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'OggS') inputExt = '.ogg';
+      else if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'fLaC') inputExt = '.flac';
+      else inputExt = '.bin';
     }
-    // cleanup raw
-    try { rmSync(rawPath, { force: true }); } catch { void 0; }
+    const rawPath = join(soundsDir, `${id}${inputExt}`);
+    writeFileSync(rawPath, buf);
+
+    const wavPath = join(soundsDir, `${id}.wav`);
+    let storedName = `${id}.wav`;
+    let converted = false;
+    const { execFileSync } = await import('node:child_process');
+    // Try sox first (preferred, available in the runtime image).
+    try {
+      const type = inputExt.replace(/^\./, '');
+      const args: string[] = [];
+      if (type && type !== 'bin') args.push('-t', type);
+      args.push(rawPath, '-r', '8000', '-c', '1', wavPath);
+      execFileSync('sox', args, { timeout: 30000 });
+      converted = true;
+    } catch {
+      // sox unavailable or format unsupported: try ffmpeg.
+      try {
+        execFileSync('ffmpeg', ['-y', '-i', rawPath, '-ar', '8000', '-ac', '1', wavPath], { timeout: 30000, stdio: 'ignore' });
+        converted = true;
+      } catch {
+        // no converter available
+      }
+    }
+    if (!converted) {
+      if (inputExt === '.wav') {
+        writeFileSync(wavPath, buf);
+        converted = true;
+      } else {
+        // Keep the original bytes under their native extension so Asterisk can
+        // still play the file (e.g. MP3 via format_mp3) instead of a broken wav.
+        const nativePath = join(soundsDir, `${id}${inputExt}`);
+        writeFileSync(nativePath, buf);
+        storedName = `${id}${inputExt}`;
+      }
+    }
+    // cleanup raw input when it is not the final artifact
+    if (rawPath !== join(soundsDir, storedName)) {
+      try { rmSync(rawPath, { force: true }); } catch { void 0; }
+    }
     const prompt = createPrompt({
       name,
       kind: 'custom',
-      file: `custom/${id}.wav`,
+      file: `custom/${storedName}`,
       originalName,
       durationMs: 0,
     } as unknown as Parameters<typeof createPrompt>[0]);
