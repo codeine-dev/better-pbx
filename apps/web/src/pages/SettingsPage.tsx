@@ -6,6 +6,7 @@ import { api } from '../lib/api';
 export function SettingsPage() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ['settings'], queryFn: api.settings });
+  const { data: mcp } = useQuery({ queryKey: ['mcp-status'], queryFn: api.mcpStatus });
   const [form, setForm] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -71,6 +72,59 @@ export function SettingsPage() {
           <div><label className="label">Max messages</label><input type="number" className="input" value={form.voicemail.maxMessages} onChange={(e) => setForm({ ...form, voicemail: { ...form.voicemail, maxMessages: Number(e.target.value) } })} /></div>
           <div><label className="label">Max seconds</label><input type="number" className="input" value={form.voicemail.maxSeconds} onChange={(e) => setForm({ ...form, voicemail: { ...form.voicemail, maxSeconds: Number(e.target.value) } })} /></div>
           <div><label className="label">Default PIN length</label><input type="number" className="input" value={form.voicemail.defaultPinLength} onChange={(e) => setForm({ ...form, voicemail: { ...form.voicemail, defaultPinLength: Number(e.target.value) } })} /></div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header"><span className="font-medium">Model Context Protocol (MCP)</span></div>
+        <div className="card-body space-y-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.mcp?.enabled ?? true}
+              onChange={(e) => setForm({ ...form, mcp: { enabled: e.target.checked } })}
+            />
+            Enable MCP server
+          </label>
+          <p className="text-xs text-[var(--muted)]">
+            Endpoint: <code>{window.location.origin}{mcp?.path ?? '/mcp'}</code>
+          </p>
+          <p className="text-xs text-[var(--muted)]">
+            Token: <code className="break-all">{mcp?.token ?? 'loading…'}</code>
+          </p>
+          <div className="space-y-3 text-sm">
+            <div>
+              <div className="font-medium">Claude Desktop</div>
+              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">{JSON.stringify({
+                mcpServers: {
+                  'better-pbx': {
+                    url: `${window.location.origin}${mcp?.path ?? '/mcp'}`,
+                    headers: { Authorization: `Bearer ${mcp?.token ?? '<token>'}` },
+                  },
+                },
+              }, null, 2)}</pre>
+            </div>
+            <div>
+              <div className="font-medium">OpenAI (Codex / Agents)</div>
+              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">{`# Add to your MCP client config
+url: ${window.location.origin}${mcp?.path ?? '/mcp'}
+transport: streamable-http
+headers:
+  Authorization: Bearer ${mcp?.token ?? '<token>'}`}</pre>
+            </div>
+            <div>
+              <div className="font-medium">OpenCode</div>
+              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">{JSON.stringify({
+                mcp: {
+                  'better-pbx': {
+                    type: 'remote',
+                    url: `${window.location.origin}${mcp?.path ?? '/mcp'}`,
+                    headers: { Authorization: `Bearer ${mcp?.token ?? '<token>'}` },
+                  },
+                },
+              }, null, 2)}</pre>
+            </div>
+          </div>
         </div>
       </div>
 

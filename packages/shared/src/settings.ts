@@ -79,11 +79,19 @@ export const voicemailSettingsSchema = z.object({
 
 export type VoicemailSettings = z.infer<typeof voicemailSettingsSchema>;
 
+export const mcpSettingsSchema = z.object({
+  /** Whether the MCP server endpoint is enabled. */
+  enabled: z.boolean().default(true),
+});
+
+export type McpSettings = z.infer<typeof mcpSettingsSchema>;
+
 export const settingsSchema = z.object({
   region: regionSettingsSchema.prefault({}),
   network: networkSettingsSchema.prefault({}),
   security: securitySettingsSchema.prefault({}),
   voicemail: voicemailSettingsSchema.prefault({}),
+  mcp: mcpSettingsSchema.prefault({}),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;

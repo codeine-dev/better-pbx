@@ -80,6 +80,7 @@ export const api = {
   diff: (sha: string) => apiFetch<{ diff: string }>(`/api/snapshots/${sha}/diff`),
   rollback: (sha: string) => apiFetch<{ ok: boolean; commitSha: string }>(`/api/snapshots/${sha}/rollback`, { method: 'POST' }),
   systemStatus: () => apiFetch<{ version: string; uptimeSeconds: number; setupRequired: boolean; gitHead: string | null }>('/api/system/status'),
+  mcpStatus: () => apiFetch<{ enabled: boolean; path: string; token: string }>('/api/system/mcp'),
   bans: () => apiFetch<Array<{ ip: string; reason: string | null; source: string; createdAt: string; expiresAt: string | null; active: boolean }>>('/api/security/bans'),
   unban: (ip: string) => apiFetch<{ ok: boolean }>(`/api/security/bans/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
   audit: () => apiFetch<Array<{ id: number; createdAt: string; actor: string; action: string; target: string | null; commitSha: string | null }>>('/api/audit'),

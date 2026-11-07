@@ -380,6 +380,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     if (body?.voicemail && typeof body.voicemail === 'object') {
       newModel.settings.voicemail = { ...model.settings.voicemail, ...(body.voicemail as Record<string, unknown>) } as typeof model.settings.voicemail;
     }
+    if (body?.mcp && typeof body.mcp === 'object') {
+      newModel.settings.mcp = { ...model.settings.mcp, ...(body.mcp as Record<string, unknown>) } as typeof model.settings.mcp;
+    }
     const sec = body?.security;
     if (sec && typeof sec === 'object' && (sec as Record<string, unknown>).fail2ban && typeof (sec as Record<string, unknown>).fail2ban === 'object') {
       const fb = (sec as Record<string, unknown>).fail2ban as Record<string, unknown>;
@@ -1225,6 +1228,13 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     };
   });
 
+  app.get('/api/system/mcp', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    const enabled = model ? model.settings?.mcp?.enabled !== false : true;
+    return { enabled, path: '/mcp', token: resolvedMcpToken };
+  });
+
   app.get('/api/system/config', async (req) => {
     requireAuth(req);
     // list rendered files
@@ -1288,6 +1298,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       reply.raw.statusCode = 401;
       reply.raw.setHeader('content-type', 'application/json');
       reply.raw.end(JSON.stringify({ error: { code: 'unauthorized', message: 'invalid MCP token' } }));
+      return;
+    }
+
+    const currentModel = readModel(config);
+    if (currentModel && currentModel.settings?.mcp?.enabled === false) {
+      reply.code(503);
+      reply.raw.statusCode = 503;
+      reply.raw.setHeader('content-type', 'application/json');
+      reply.raw.end(JSON.stringify({ error: { code: 'mcp_disabled', message: 'MCP server is disabled' } }));
       return;
     }
 
