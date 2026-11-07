@@ -1,11 +1,11 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: in_progress
-owner: opencode
+status: ready
+owner: null
 branch: main
 depends_on: [1]
-updated: "2026-11-06T23:52:44Z"
+updated: "2026-11-07T00:26:01Z"
 blocked_reason: null
 ---
 
@@ -19,7 +19,7 @@ Build the pure TypeScript core that turns a validated model into deterministic, 
 
 - [x] **P2-01** Implement `packages/shared`: full Zod model, destination union, defaults for every resource, schema version and migration hook.
 - [x] **P2-02** Implement deterministic renderers for every file in `PLAN.md` §3.2 (`asterisk.conf`, `pjsip.conf`, `extensions.conf`, `queues.conf`, `voicemail.conf`, `logger.conf`, `rtp.conf`, `indications.conf`, `features.conf`, `modules.conf`, `cdr.conf`, `musiconhold.conf`, fail2ban config).
-- [ ] **P2-03** Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation.
+- [x] **P2-03** Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation.
 - [ ] **P2-04** Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation.
 - [ ] **P2-05** Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations.
 - [ ] **P2-06** Create the complete golden fixture covering every feature and snapshot every rendered file.
