@@ -1,11 +1,11 @@
 ---
 phase: 5
 title: Extensions, trunks, and outbound routing
-status: ready
-owner: null
+status: done
+owner: opencode
 branch: main
 depends_on: [2, 3, 4]
-updated: "2026-11-07T01:00:40Z"
+updated: "2026-11-07T01:02:54Z"
 blocked_reason: null
 ---
 
@@ -22,7 +22,7 @@ Deliver the first complete telephony CRUD slice: a phone can register, a trunk c
 - [x] **P5-03** Outbound routes API/UI: dialplan patterns, strip/prepend, caller ID override, trunk selection, emergency route setting, premium/unsafe confirmation; reject catch-all patterns by default.
 - [x] **P5-04** Add apply/reload feedback, dialplan overlap and conflict warnings, and delete guards for resources still referenced by routes.
 - [x] **P5-05** Update the dashboard checklist as extensions, trunks, and routes are added.
-- [ ] **P5-06** Add golden and API integration tests for create/edit/delete and the resulting rendered `pjsip.conf`/`extensions.conf`.
+- [x] **P5-06** Add golden and API integration tests for create/edit/delete and the resulting rendered `pjsip.conf`/`extensions.conf`.
 
 ## Exit criteria
 

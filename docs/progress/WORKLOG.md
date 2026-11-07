@@ -45,3 +45,7 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:00:40Z — P5-03 — opencode — Outbound routes API/UI: dialplan patterns, strip/prepend, caller ID override, trunk selection, emergency route setting, premium/unsafe confirmation; reject catch-all patterns by default. — commit: 6e1700e — implemented (basic)
 - 2026-11-07T01:00:40Z — P5-04 — opencode — Add apply/reload feedback, dialplan overlap and conflict warnings, and delete guards for resources still referenced by routes. — commit: 6e1700e — implemented (basic)
 - 2026-11-07T01:00:40Z — P5-05 — opencode — Update the dashboard checklist as extensions, trunks, and routes are added. — commit: 6e1700e — implemented (basic)
+- 2026-11-07T01:02:54Z — P5-06 — opencode — Add golden and API integration tests for create/edit/delete and the resulting rendered `pjsip.conf`/`extensions.conf`. — commit: 68a6e88 — phase 5 integration tests
+- 2026-11-07T01:03:41Z — P6-01 — opencode — Inbound routes API/UI: DID or pattern matching, optional trunk filter, caller-ID filter, and a destination picker shared across features. — commit: 60cc6f8 — implemented basic
+- 2026-11-07T01:03:41Z — P6-02 — opencode — Ring groups: number, strategy (ringall/linear/rrmemory), members, ring time, and no-answer destination; render one Asterisk queue per group. — commit: 60cc6f8 — implemented basic
+- 2026-11-07T01:03:41Z — P6-03 — opencode — IVRs: greeting prompt, timeout, retries, digit options, invalid/timeout destinations, and direct dial; reject cycles. — commit: 60cc6f8 — implemented basic
