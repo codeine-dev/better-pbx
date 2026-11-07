@@ -180,6 +180,7 @@ ENV NODE_ENV=production \
     PBX_API_PORT=8080 \
     PBX_API_HOST=0.0.0.0 \
     PBX_SETUP_TOKEN_FILE=/data/setup-token \
+    OPENSSL_CONF=/data/runtime/tls/openssl.cnf \
     PBX_INTERNAL_TOKEN_FILE=/data/runtime/internal-token \
     PBX_INTERNAL_URL=http://127.0.0.1:8080 \
     TZ=UTC

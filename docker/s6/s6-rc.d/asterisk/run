@@ -11,4 +11,5 @@
     sleep 0.1
   done
 ) &
+export OPENSSL_CONF="${OPENSSL_CONF:-/data/runtime/tls/openssl.cnf}"
 exec s6-setuidgid asterisk /usr/sbin/asterisk -f -C /etc/asterisk/asterisk.conf

@@ -77,6 +77,23 @@ deny = 0.0.0.0/0.0.0.0
 EOF
 fi
 
+# OpenSSL defaults for Asterisk TLS/SRTP. Restrict ECDHE curves to widely supported ones
+# to avoid 'wrong curve' handshakes with older SIP phones, while keeping RSA fallbacks.
+if [ ! -s "$DATA/runtime/tls/openssl.cnf" ]; then
+  umask 022
+  cat >"$DATA/runtime/tls/openssl.cnf" <<'EOF'
+openssl_conf = default_conf
+[default_conf]
+ssl_conf = ssl_sect
+[ssl_sect]
+system_default = system_default_sect
+[system_default_sect]
+MinProtocol = TLSv1.2
+Curves = prime256v1:X25519:secp384r1:secp521r1
+EOF
+  log "generated OpenSSL defaults for TLS"
+fi
+
 # Self-signed SIP TLS material. The key stays readable only by Asterisk, which also owns
 # the key file even though the API owns the rest of the runtime directory.
 if [ ! -s "$DATA/runtime/tls/sip.key" ] || [ ! -s "$DATA/runtime/tls/sip.crt" ]; then

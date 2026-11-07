@@ -214,6 +214,7 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
         `cert_file = ${paths.dataDir}/runtime/tls/sip.crt`,
         `priv_key_file = ${paths.dataDir}/runtime/tls/sip.key`,
         'method = tlsv1_2',
+        'cipher = AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA',
         'verify_client = no',
         'require_client_cert = no',
         'allow_reload = yes',

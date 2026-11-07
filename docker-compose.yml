@@ -32,6 +32,7 @@ services:
       TZ: ${TZ:-UTC}
       PBX_API_HOST: ${PBX_API_HOST:-0.0.0.0}
       PBX_API_PORT: ${PBX_API_PORT:-8080}
+      OPENSSL_CONF: /data/runtime/tls/openssl.cnf
       # Optional: pin the first-run setup code for automated provisioning.
       # PBX_SETUP_TOKEN: ${PBX_SETUP_TOKEN:-}
 
