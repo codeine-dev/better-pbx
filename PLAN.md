@@ -250,9 +250,15 @@ DELETE /api/security/bans/:ip
 GET    /api/security/status
 
 POST   /internal/bans        (loopback + internal token, fail2ban only)
+
+POST   /mcp, /api/mcp        (MCP Streamable HTTP, JSON-RPC over SSE; agents)
 ```
 
 Conventions: JSON, camelCase, Zod-validated bodies, ETag/`If-Match` on mutations, `409` on stale writes, structured errors, OpenAPI docs at `/api/docs`.
+
+### 3.4.1 Model Context Protocol (MCP) endpoint
+
+The API exposes an MCP server at `/mcp` and `/api/mcp` using the Streamable HTTP transport (JSON-RPC over SSE, stateless mode). It lets external agents (e.g. OpenCode) inspect and, when authorised, configure the PBX through typed tools instead of raw REST calls. Tools cover health/status, model summaries, extensions/trunks/routes/ring groups/IVRs, settings, snapshots and diffs, logs, CDR, bans, audit, rendered config (read-only), and create/update/delete operations that reuse the same validation, security policy, apply pipeline, Git snapshot, and audit logging as the REST API. Authentication uses a generated token stored at `/data/runtime/mcp-token` (mode 0600): requests from loopback are allowed without a token, remote requests require `Authorization: Bearer <token>` (or `X-MCP-Token`). The endpoint is exempt from the setup gate so agents can report setup status; mutating tools return `setup required` until setup completes. Security invariants are unchanged: every mutation still passes Zod validation, security policy, render + apply, and is snapshotted as a Git commit.
 
 ### 3.5 Auth and API hardening
 
@@ -263,6 +269,7 @@ Conventions: JSON, camelCase, Zod-validated bodies, ETag/`If-Match` on mutations
 - CSP, HSTS (when HTTPS), frame denial, no-sniff, referrer policy.
 - API listens on 8080; no CORS by default (same origin).
 - Internal ban endpoint bound to loopback and authenticated with `/data/runtime/internal-token`.
+- MCP endpoint (`/mcp`, `/api/mcp`) authenticated with `/data/runtime/mcp-token`; loopback requests are allowed without a token, remote requests require `Authorization: Bearer <token>`. Tokens are generated on first boot (overridable via `PBX_MCP_TOKEN`? no; `BuildAppOptions.mcpToken` / file).
 - Password reset CLI for recovery.
 
 ### 3.6 Frontend

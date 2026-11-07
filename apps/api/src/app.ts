@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
@@ -7,6 +7,8 @@ import { resolveConfig, type ApiConfig } from './config.js';
 import { openDb } from './db.js';
 import { GitManager } from './git-manager.js';
 import { AsteriskCli, Fail2banCli, type CommandRunner } from './cli.js';
+import { createMcpServer, type McpContext } from './mcp.js';
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { hashPassword, verifyPassword } from './auth/password.js';
 import { recordAudit, listAudit } from './audit.js';
 import { addBan, listBans, removeBan, sweepExpired } from './bans.js';
@@ -27,6 +29,7 @@ export interface BuildAppOptions {
   logger?: boolean;
   commandRunner?: CommandRunner;
   internalToken?: string;
+  mcpToken?: string;
 }
 
 interface SessionRow {
@@ -71,9 +74,32 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   }
   const internalToken = readFileSync(config.internalTokenPath, 'utf8').trim();
 
+  // mcp token
+  const mcpTokenPath = join(config.runtimeDir, 'mcp-token');
+  if (options.mcpToken) {
+    mkdirSync(config.runtimeDir, { recursive: true });
+    writeFileSync(mcpTokenPath, options.mcpToken + '\n', { mode: 0o600 });
+  }
+  if (!existsSync(mcpTokenPath)) {
+    const tok = randomBytes(32).toString('hex');
+    mkdirSync(config.runtimeDir, { recursive: true });
+    writeFileSync(mcpTokenPath, tok + '\n', { mode: 0o600 });
+  }
+  const resolvedMcpToken = readFileSync(mcpTokenPath, 'utf8').trim();
+
   const startedAt = Date.now();
   const app = Fastify({ logger: options.logger ?? false });
   let sipTraceEnabled = false;
+
+  const mcpCtx: McpContext = {
+    config,
+    db,
+    git,
+    asterisk,
+    fail2ban,
+    mcpToken: resolvedMcpToken,
+    startedAt,
+  };
 
   // helpers
   function setupRequiredNow(): boolean {
@@ -159,6 +185,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     if (!url.startsWith('/api')) return;
     if (url === '/api/health' || url === '/api/setup/status' || url.startsWith('/api/setup')) return;
     if (url === '/api/auth/login') return;
+    if (url === '/api/mcp') return;
     if (setupRequiredNow()) {
       reply.code(503).send({ error: { code: 'setup_required', message: 'setup is required' } });
       return reply;
@@ -1237,6 +1264,83 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     info: { title: 'BetterPBX API', version: API_VERSION },
     paths: {},
   }));
+
+  // MCP server endpoint (Streamable HTTP, stateless)
+  const handleMcp = async (req: FastifyRequest, reply: FastifyReply) => {
+    const remote = req.ip;
+    const loopback = remote === '127.0.0.1' || remote === '::1' || remote === '::ffff:127.0.0.1';
+    const providedHeader = req.headers['authorization'] ?? req.headers['x-mcp-token'];
+    const provided = Array.isArray(providedHeader) ? providedHeader[0] : providedHeader;
+    let token: string | undefined;
+    if (typeof provided === 'string') {
+      token = provided.startsWith('Bearer ') || provided.startsWith('bearer ') ? provided.slice(7).trim() : provided.trim();
+    }
+    if (!loopback) {
+      if (token !== resolvedMcpToken) {
+        reply.code(401);
+        reply.raw.statusCode = 401;
+        reply.raw.setHeader('content-type', 'application/json');
+        reply.raw.end(JSON.stringify({ error: { code: 'unauthorized', message: 'invalid or missing MCP token' } }));
+        return;
+      }
+    } else if (token && token !== resolvedMcpToken) {
+      reply.code(401);
+      reply.raw.statusCode = 401;
+      reply.raw.setHeader('content-type', 'application/json');
+      reply.raw.end(JSON.stringify({ error: { code: 'unauthorized', message: 'invalid MCP token' } }));
+      return;
+    }
+
+    const server = createMcpServer(mcpCtx);
+    const transport = new WebStandardStreamableHTTPServerTransport({});
+    await server.connect(transport);
+    const host = (req.headers.host as string) ?? 'localhost';
+    const url = `${req.protocol}://${host}${req.url}`;
+    const init: RequestInit = { method: req.method, headers: req.headers as Record<string, string> };
+    if (req.method !== 'GET' && req.method !== 'DELETE') init.body = JSON.stringify(req.body);
+    const request = new Request(url, init);
+    transport.onerror = (err) => { void err; };
+    let response;
+    try {
+      response = await transport.handleRequest(request);
+    } catch (e) {
+      console.error('HANDLE ERROR', e);
+      throw e;
+    }
+
+    if (req.method === 'GET') {
+      reply.hijack();
+      const raw = reply.raw;
+      raw.statusCode = response.status;
+      response.headers.forEach((value: string, key: string) => raw.setHeader(key, value));
+      if (response.body) {
+        const reader = response.body.getReader();
+        const pump = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            raw.write(Buffer.from(value));
+          }
+          raw.end();
+          void transport.close();
+          void server.close();
+        };
+        pump().catch((err) => { raw.destroy(err as Error); });
+      } else {
+        raw.end();
+      }
+      return;
+    }
+    const buf = response.body ? await response.arrayBuffer() : new ArrayBuffer(0);
+    reply.code(response.status);
+    response.headers.forEach((value: string, key: string) => reply.header(key, value));
+    void transport.close();
+    void server.close();
+    return reply.send(Buffer.from(buf));
+  };
+
+  app.all('/mcp', handleMcp as never);
+  app.all('/api/mcp', handleMcp as never);
 
   // static SPA fallback
   const webDist = config.webDistDir;
