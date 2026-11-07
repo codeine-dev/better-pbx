@@ -1,3 +1,14 @@
 #!/bin/sh
 # Asterisk runs in the foreground under s6 and drops privileges to asterisk:pbx.
+# The control socket is created mode 0755 by Asterisk; fix its permissions so the
+# unprivileged API process (pbx) can issue reload commands without extra capabilities.
+( for i in $(seq 1 100); do
+    if [ -S /run/asterisk/asterisk.ctl ]; then
+      chmod 0660 /run/asterisk/asterisk.ctl 2>/dev/null || true
+      chown asterisk:pbx /run/asterisk/asterisk.ctl 2>/dev/null || true
+      break
+    fi
+    sleep 0.1
+  done
+) &
 exec s6-setuidgid asterisk /usr/sbin/asterisk -f -C /etc/asterisk/asterisk.conf
