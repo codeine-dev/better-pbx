@@ -16,7 +16,7 @@ import { badRequest, unauthorized, forbidden, notFound, conflict, setupRequired,
 import { assertValidModel } from '@better-pbx/config-engine';
 import { API_VERSION } from './version.js';
 import type { PbxModel } from '@better-pbx/shared';
-import { createExtension, createTrunk, createOutboundRoute } from '@better-pbx/shared';
+import { createExtension, createTrunk, createOutboundRoute, createInboundRoute, createRingGroup, createIvr, createPrompt } from '@better-pbx/shared';
 
 export { API_VERSION };
 
@@ -612,6 +612,233 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
     }, model);
     recordAudit(db, { actor: user.username, action: 'delete-outbound-route', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // inbound routes
+  app.get('/api/inbound-routes', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.inboundRoutes;
+  });
+  app.post('/api/inbound-routes', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const route = createInboundRoute({
+      name: String(body.name ?? ''),
+      did: String(body.did ?? ''),
+      trunkId: typeof body.trunkId === 'string' ? body.trunkId : undefined,
+      destination: body.destination as never,
+      callerIdFilter: typeof body.callerIdFilter === 'string' ? body.callerIdFilter : undefined,
+      enabled: typeof body.enabled === 'boolean' ? body.enabled : undefined,
+    } as unknown as Parameters<typeof createInboundRoute>[0]);
+    const newModel = { ...model, inboundRoutes: [...model.inboundRoutes, route], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create inbound route', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'create-inbound-route', target: route.id, commitSha: result.commitSha });
+    return route;
+  });
+  app.patch('/api/inbound-routes/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.inboundRoutes.findIndex((r) => r.id === id);
+    if (idx < 0) throw notFound('inbound route not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.inboundRoutes[idx];
+    const updated = { ...current, ...body } as typeof current;
+    const newRoutes = model.inboundRoutes.map((r, i) => (i === idx ? updated : r));
+    const newModel = { ...model, inboundRoutes: newRoutes, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update inbound route', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'update-inbound-route', target: id, commitSha: result.commitSha });
+    return updated;
+  });
+  app.delete('/api/inbound-routes/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const newModel = { ...model, inboundRoutes: model.inboundRoutes.filter((r) => r.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete inbound route', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-inbound-route', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // ring groups
+  app.get('/api/ring-groups', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.ringGroups;
+  });
+  app.post('/api/ring-groups', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const group = createRingGroup({
+      name: String(body.name ?? ''),
+      number: String(body.number ?? ''),
+      memberIds: Array.isArray(body.memberIds) ? (body.memberIds as string[]) : [],
+      destinationIfNoAnswer: body.destinationIfNoAnswer as never,
+      strategy: typeof body.strategy === 'string' ? (body.strategy as 'ringall' | 'linear' | 'rrmemory') : undefined,
+      ringTime: typeof body.ringTime === 'number' ? body.ringTime : undefined,
+    } as unknown as Parameters<typeof createRingGroup>[0]);
+    const newModel = { ...model, ringGroups: [...model.ringGroups, group], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create ring group', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'create-ring-group', target: group.id, commitSha: result.commitSha });
+    return group;
+  });
+  app.patch('/api/ring-groups/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.ringGroups.findIndex((r) => r.id === id);
+    if (idx < 0) throw notFound('ring group not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.ringGroups[idx];
+    const updated = { ...current, ...body } as typeof current;
+    const newGroups = model.ringGroups.map((r, i) => (i === idx ? updated : r));
+    const newModel = { ...model, ringGroups: newGroups, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update ring group', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'update-ring-group', target: id, commitSha: result.commitSha });
+    return updated;
+  });
+  app.delete('/api/ring-groups/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const newModel = { ...model, ringGroups: model.ringGroups.filter((r) => r.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete ring group', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-ring-group', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // ivrs
+  app.get('/api/ivrs', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.ivrs;
+  });
+  app.post('/api/ivrs', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const ivr = createIvr({
+      name: String(body.name ?? ''),
+      greetingPromptId: String(body.greetingPromptId ?? ''),
+      timeoutDestination: body.timeoutDestination as never,
+      timeoutSeconds: typeof body.timeoutSeconds === 'number' ? body.timeoutSeconds : undefined,
+      maxRetries: typeof body.maxRetries === 'number' ? body.maxRetries : undefined,
+      options: Array.isArray(body.options) ? (body.options as never) : undefined,
+      invalidDestination: body.invalidDestination as never,
+      directDial: typeof body.directDial === 'boolean' ? body.directDial : undefined,
+      number: typeof body.number === 'string' ? body.number : undefined,
+    } as unknown as Parameters<typeof createIvr>[0]);
+    const newModel = { ...model, ivrs: [...model.ivrs, ivr], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create IVR', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'create-ivr', target: ivr.id, commitSha: result.commitSha });
+    return ivr;
+  });
+  app.patch('/api/ivrs/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.ivrs.findIndex((r) => r.id === id);
+    if (idx < 0) throw notFound('ivr not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.ivrs[idx];
+    const updated = { ...current, ...body } as typeof current;
+    const newIvrs = model.ivrs.map((r, i) => (i === idx ? updated : r));
+    const newModel = { ...model, ivrs: newIvrs, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update IVR', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'update-ivr', target: id, commitSha: result.commitSha });
+    return updated;
+  });
+  app.delete('/api/ivrs/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const newModel = { ...model, ivrs: model.ivrs.filter((r) => r.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete IVR', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-ivr', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // prompts
+  app.get('/api/prompts', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.prompts;
+  });
+  app.post('/api/prompts', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const prompt = createPrompt({
+      name: String(body.name ?? ''),
+      kind: (body.kind === 'custom' ? 'custom' : 'builtin') as 'builtin' | 'custom',
+      file: String(body.file ?? ''),
+      originalName: typeof body.originalName === 'string' ? body.originalName : undefined,
+      durationMs: typeof body.durationMs === 'number' ? body.durationMs : undefined,
+    } as unknown as Parameters<typeof createPrompt>[0]);
+    const newModel = { ...model, prompts: [...model.prompts, prompt], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create prompt', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'create-prompt', target: prompt.id, commitSha: result.commitSha });
+    return prompt;
+  });
+  app.delete('/api/prompts/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const newModel = { ...model, prompts: model.prompts.filter((p) => p.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete prompt', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-prompt', target: id, commitSha: result.commitSha });
     return { ok: true, commitSha: result.commitSha };
   });
 
