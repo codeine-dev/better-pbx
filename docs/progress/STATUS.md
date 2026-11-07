@@ -4,11 +4,11 @@
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
 **Overall:** 3/10 phases done · 21/72 tasks done
-**Last phase update:** 2026-11-07T00:43:50Z
+**Last phase update:** 2026-11-07T00:49:22Z
 
 ## Current focus
 
-- No phase is currently in progress.
+- [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots — owner: `opencode`
 
 ## Phases
 
@@ -17,7 +17,7 @@
 | [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | ✔ done | opencode | 8/8 | 0 | 2026-11-06T00:58:39Z |
 | [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ✔ done | opencode | 8/8 | 1 | 2026-11-07T00:43:50Z |
-| [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
+| [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | ◐ in_progress | opencode | 0/9 | 2 | 2026-11-07T00:49:22Z |
 | [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
 | [Phase 5](phases/05-core-crud.md) — Extensions, trunks, and outbound routing | · not_started | — | 0/6 | 2, 3, 4 | 2026-11-05T00:00:00Z |
 | [Phase 6](phases/06-telephony.md) — Inbound routing, ring groups, IVRs, and voicemail | · not_started | — | 0/7 | 2, 5 | 2026-11-05T00:00:00Z |
@@ -27,7 +27,9 @@
 
 ## Active claims
 
-_None._
+| Task | Phase | Agent | Started | Lease until | Note |
+| --- | --- | --- | --- | --- | --- |
+| P3-01 | 3 | opencode | 2026-11-07T00:49:22Z | 2026-11-07T08:49:22Z | starting Fastify app |
 
 ## Blocked
 
@@ -35,7 +37,14 @@ _None._
 
 ## Ready to claim
 
-_None._
+- **P3-02** — Add SQLite migrations for users, sessions, audit log, CDR index, and meta; add a migration command. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-03** — Implement setup status/completion with the one-time setup code, admin creation, session login/logout, CSRF, login rate limiting, and the setup gate middleware. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-04** — Implement the Git manager: init, commit, list, show, diff, restore, clean status, session author, safe argument handling. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-05** — Implement the apply pipeline: model lock, staging render, policy checks, atomic writes, reload classification, failure rollback, audit, and commit. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-06** — Implement Asterisk and fail2ban CLI wrappers with timeouts, parsed output, and injectable runners for tests. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-07** — Implement the internal ban endpoint, ban store with expiry, and sweeper. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-08** — Implement the audit log for every mutation and rollback. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
+- **P3-09** — Add integration tests using a temp `/data` and fake command runners: setup gate, auth, CRUD, commit, diff, rollback, CSRF, stale-write handling. _([Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots)_
 
 ## Recent worklog
 

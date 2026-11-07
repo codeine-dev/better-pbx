@@ -1,11 +1,11 @@
 ---
 phase: 3
 title: API core, apply pipeline, and snapshots
-status: not_started
-owner: null
-branch: null
+status: in_progress
+owner: opencode
+branch: main
 depends_on: [2]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-07T00:49:22Z"
 blocked_reason: null
 ---
 

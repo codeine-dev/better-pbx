@@ -20,8 +20,8 @@ afterEach(() => {
 
 describe('health endpoint', () => {
   it('reports the service as healthy', async () => {
-    const app = buildApp({ logger: false });
-
+    const app = buildApp({ logger: false, dataDir: mkdtempSync(join(tmpdir(), 'better-pbx-api-')) });
+ 
     const response = await app.inject({ method: 'GET', url: '/api/health' });
 
     expect(response.statusCode).toBe(200);
@@ -38,7 +38,7 @@ describe('setup status endpoint', () => {
   it('requires setup while the one-time token exists', async () => {
     const tokenPath = setupTokenPath();
     writeFileSync(tokenPath, 'ABCD-EFGH\n');
-    const app = buildApp({ logger: false, setupTokenPath: tokenPath });
+    const app = buildApp({ logger: false, setupTokenPath: tokenPath, dataDir: join(tokenPath, '..') });
 
     const response = await app.inject({ method: 'GET', url: '/api/setup/status' });
 
@@ -49,7 +49,7 @@ describe('setup status endpoint', () => {
 
   it('reports setup as complete after the token is removed', async () => {
     const tokenPath = setupTokenPath();
-    const app = buildApp({ logger: false, setupTokenPath: tokenPath });
+    const app = buildApp({ logger: false, setupTokenPath: tokenPath, dataDir: join(tokenPath, '..') });
 
     const response = await app.inject({ method: 'GET', url: '/api/setup/status' });
 

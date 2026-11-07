@@ -6,10 +6,14 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "migrate": "node ./dist/migrate.js"
   },
   "dependencies": {
+    "@better-pbx/config-engine": "workspace:*",
+    "@better-pbx/shared": "workspace:*",
     "fastify": "^5.12.8",
+    "js-yaml": "^4.3.2",
     "zod": "^4.6.7"
   }
 }
