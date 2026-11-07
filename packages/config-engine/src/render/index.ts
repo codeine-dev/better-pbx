@@ -34,7 +34,7 @@ export function renderAsteriskTree(model: PbxModel, options: RenderOptions = {})
     'asterisk/indications.conf': renderIndicationsConf(model.settings.region),
     'asterisk/logger.conf': renderLoggerConf(),
     'asterisk/modules.conf': renderModulesConf(),
-    'asterisk/musiconhold.conf': renderMusicOnHoldConf(),
+    'asterisk/musiconhold.conf': renderMusicOnHoldConf(model),
     'asterisk/pjsip.conf': renderPjsipConf(model, paths),
     'asterisk/queues.conf': renderQueuesConf(model),
     'asterisk/rtp.conf': renderRtpConf(model.settings.network),

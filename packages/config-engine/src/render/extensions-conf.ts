@@ -65,9 +65,11 @@ function extensionEntryFor(extension: Extension): string[] {
 function ringGroupEntry(group: RingGroup, lookup: ModelLookup): string[] {
   const noAnswer = ensureHangup(destinationActions(group.destinationIfNoAnswer, lookup));
   const [firstNoAnswer, ...restNoAnswer] = noAnswer;
+  const queueOptions = group.musicOnHoldClassId === undefined ? `r${group.ringTime + 5}` : `${group.ringTime + 5}`;
   const lines = [
     `exten => ${group.number},1,NoOp(${sanitizeValue(`Ring group ${group.name} <${group.number}>`)})`,
-    same(`Queue(${queueName(group.id)},${group.ringTime + 5})`),
+    same('Answer()'),
+    same(`Queue(${queueName(group.id)},${queueOptions})`),
     same('GotoIf($["${QUEUESTATUS}" = "TIMEOUT"]?noanswer)'),
     same('Hangup()'),
   ];

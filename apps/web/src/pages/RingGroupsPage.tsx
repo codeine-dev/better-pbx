@@ -13,28 +13,31 @@ interface Form {
   memberIds: string[];
   ringTime: number;
   destinationIfNoAnswer: Destination;
+  musicOnHoldClassId?: string;
 }
 
-const empty = (): Form => ({ name: '', number: '', strategy: 'ringall', memberIds: [], ringTime: 20, destinationIfNoAnswer: defaultDest });
+const empty = (): Form => ({ name: '', number: '', strategy: 'ringall', memberIds: [], ringTime: 20, destinationIfNoAnswer: defaultDest, musicOnHoldClassId: '' });
 
 export function RingGroupsPage() {
   const qc = useQueryClient();
   const { data: groups } = useQuery({ queryKey: ['ring-groups'], queryFn: api.ringGroups });
   const { data: exts } = useQuery({ queryKey: ['extensions'], queryFn: api.extensions });
+  const { data: moh } = useQuery({ queryKey: ['music-on-hold'], queryFn: api.musicOnHold });
   const [form, setForm] = useState<Form>(empty());
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const invalidate = () => void qc.invalidateQueries({ queryKey: ['ring-groups'] });
 
+  const toBody = () => ({ ...form, musicOnHoldClassId: form.musicOnHoldClassId || undefined });
   const create = useMutation({
-    mutationFn: () => api.createRingGroup(form),
+    mutationFn: () => api.createRingGroup(toBody()),
     onSuccess: () => { setForm(empty()); setError(null); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
   const update = useMutation({
     mutationFn: () => {
       if (!editing) throw new Error('no editing');
-      return api.patchRingGroup(editing, form);
+      return api.patchRingGroup(editing, toBody());
     },
     onSuccess: () => { setEditing(null); setForm(empty()); setError(null); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
@@ -75,6 +78,13 @@ export function RingGroupsPage() {
               </select>
             </div>
             <div><label className="label">Ring time (s)</label><input type="number" className="input" value={form.ringTime} onChange={(e) => setForm({ ...form, ringTime: Number(e.target.value) })} /></div>
+            <div>
+              <label className="label">Music on hold</label>
+              <select className="select" value={form.musicOnHoldClassId ?? ''} onChange={(e) => setForm({ ...form, musicOnHoldClassId: e.target.value })}>
+                <option value="">Dial tone (regional default)</option>
+                {(moh ?? []).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+            </div>
           </div>
 
           <div>
@@ -112,7 +122,7 @@ export function RingGroupsPage() {
                     <div className="text-xs text-[var(--muted)]">{g.strategy} · {g.memberIds.length} members · {g.ringTime}s</div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="btn btn-ghost" onClick={() => { setEditing(g.id); setForm({ name: g.name, number: g.number, strategy: g.strategy, memberIds: g.memberIds, ringTime: g.ringTime, destinationIfNoAnswer: g.destinationIfNoAnswer }); }}>Edit</button>
+                    <button className="btn btn-ghost" onClick={() => { setEditing(g.id); setForm({ name: g.name, number: g.number, strategy: g.strategy, memberIds: g.memberIds, ringTime: g.ringTime, destinationIfNoAnswer: g.destinationIfNoAnswer, musicOnHoldClassId: g.musicOnHoldClassId ?? '' }); }}>Edit</button>
                     <button className="btn btn-danger" onClick={() => remove.mutate(g.id)}>Delete</button>
                   </div>
                 </li>

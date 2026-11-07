@@ -18,7 +18,7 @@ import { badRequest, unauthorized, forbidden, notFound, conflict, setupRequired,
 import { assertValidModel } from '@better-pbx/config-engine';
 import { API_VERSION } from './version.js';
 import type { PbxModel } from '@better-pbx/shared';
-import { createExtension, createTrunk, createOutboundRoute, createInboundRoute, createRingGroup, createIvr, createPrompt } from '@better-pbx/shared';
+import { createExtension, createTrunk, createOutboundRoute, createInboundRoute, createRingGroup, createIvr, createPrompt, createMusicOnHold } from '@better-pbx/shared';
 
 export { API_VERSION };
 
@@ -985,6 +985,117 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     recordAudit(db, { actor: user.username, action: 'delete-prompt', target: id, commitSha: result.commitSha });
     return { ok: true, commitSha: result.commitSha };
   });
+
+  // music on hold
+  const mohBasePaths = ['/api/music-on-hold', '/api/moh', '/api/music-on-hold-classes', '/api/moh-classes'];
+  for (const base of mohBasePaths) {
+    app.get(base, async (req) => {
+      requireAuth(req);
+      const model = readModel(config);
+      if (!model) throw setupRequired();
+      return model.musicOnHold;
+    });
+    app.post(base, async (req) => {
+      const session = requireAuth(req);
+      requireCsrf(req, session);
+      const user = findUserById(session.userId);
+      if (!user) throw unauthorized();
+      const model = readModel(config);
+      if (!model) throw setupRequired();
+      const body = req.body as Record<string, unknown>;
+      const entry = createMusicOnHold({ name: String(body.name ?? 'Hold music') } as unknown as Parameters<typeof createMusicOnHold>[0]);
+      const newModel = { ...model, musicOnHold: [...model.musicOnHold, entry], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+      const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create music on hold', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+      recordAudit(db, { actor: user.username, action: 'create-music-on-hold', target: entry.id, commitSha: result.commitSha });
+      return entry;
+    });
+    app.post(`${base}/upload`, async (req) => {
+      const session = requireAuth(req);
+      requireCsrf(req, session);
+      const user = findUserById(session.userId);
+      if (!user) throw unauthorized();
+      const model = readModel(config);
+      if (!model) throw setupRequired();
+      const body = req.body as Record<string, unknown>;
+      const name = String(body.name ?? 'uploaded');
+      const originalName = typeof body.originalName === 'string' ? body.originalName : 'upload.wav';
+      const content = typeof body.content === 'string' ? body.content : '';
+      if (!content) throw badRequest('content (base64) required');
+      const buf = Buffer.from(content, 'base64');
+      if (buf.length === 0) throw badRequest('empty upload');
+      if (buf.length > 10 * 1024 * 1024) throw badRequest('file too large (max 10MB)');
+      const id = randomBytes(16).toString('hex');
+      const mohDir = join(config.dataDir, 'moh', id);
+      mkdirSync(mohDir, { recursive: true });
+      const allowedExts = new Set(['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.aiff', '.au', '.wma']);
+      let inputExt = extname(originalName).toLowerCase();
+      if (!allowedExts.has(inputExt)) {
+        if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'RIFF') inputExt = '.wav';
+        else if (buf.length >= 3 && buf.slice(0, 3).toString('ascii') === 'ID3') inputExt = '.mp3';
+        else if (buf.length >= 2 && buf[0] === 0xff && ((buf[1] ?? 0) & 0xe0) === 0xe0) inputExt = '.mp3';
+        else if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'OggS') inputExt = '.ogg';
+        else if (buf.length >= 4 && buf.slice(0, 4).toString('ascii') === 'fLaC') inputExt = '.flac';
+        else inputExt = '.bin';
+      }
+      const rawPath = join(mohDir, `${id}${inputExt}`);
+      writeFileSync(rawPath, buf);
+      const wavPath = join(mohDir, `${id}.wav`);
+      let storedName = `${id}.wav`;
+      let converted = false;
+      const { execFileSync } = await import('node:child_process');
+      try {
+        const type = inputExt.replace(/^\./, '');
+        const args: string[] = [];
+        if (type && type !== 'bin') args.push('-t', type);
+        args.push(rawPath, '-r', '8000', '-c', '1', wavPath);
+        execFileSync('sox', args, { timeout: 30000 });
+        converted = true;
+      } catch {
+        try {
+          execFileSync('ffmpeg', ['-y', '-i', rawPath, '-ar', '8000', '-ac', '1', wavPath], { timeout: 30000, stdio: 'ignore' });
+          converted = true;
+        } catch {
+          // no converter
+        }
+      }
+      if (!converted) {
+        if (inputExt === '.wav') {
+          writeFileSync(wavPath, buf);
+          converted = true;
+        } else {
+          const nativePath = join(mohDir, `${id}${inputExt}`);
+          writeFileSync(nativePath, buf);
+          storedName = `${id}${inputExt}`;
+        }
+      }
+      if (rawPath !== join(mohDir, storedName)) {
+        try { rmSync(rawPath, { force: true }); } catch { void 0; }
+      }
+      const finalEntry = createMusicOnHold({ name, id } as unknown as Parameters<typeof createMusicOnHold>[0]);
+      const newModel = { ...model, musicOnHold: [...model.musicOnHold, finalEntry], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+      const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Upload music on hold', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+      recordAudit(db, { actor: user.username, action: 'upload-music-on-hold', target: finalEntry.id, commitSha: result.commitSha });
+      return finalEntry;
+    });
+    app.delete(`${base}/:id`, async (req) => {
+      const session = requireAuth(req);
+      requireCsrf(req, session);
+      const user = findUserById(session.userId);
+      if (!user) throw unauthorized();
+      const model = readModel(config);
+      if (!model) throw setupRequired();
+      const id = (req.params as { id: string }).id;
+      if (model.ringGroups.some((rg) => rg.musicOnHoldClassId === id)) {
+        throw conflict('music on hold is used by a ring group');
+      }
+      const newModel = { ...model, musicOnHold: model.musicOnHold.filter((m) => m.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+      const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete music on hold', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+      const mohDir = join(config.dataDir, 'moh', id);
+      try { rmSync(mohDir, { recursive: true, force: true }); } catch { void 0; }
+      recordAudit(db, { actor: user.username, action: 'delete-music-on-hold', target: id, commitSha: result.commitSha });
+      return { ok: true, commitSha: result.commitSha };
+    });
+  }
 
   // snapshots
   app.get('/api/snapshots', async (req) => {

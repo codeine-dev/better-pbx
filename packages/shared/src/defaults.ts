@@ -5,6 +5,7 @@ import {
   extensionSchema,
   inboundRouteSchema,
   ivrSchema,
+  musicOnHoldSchema,
   outboundRouteSchema,
   promptSchema,
   ringGroupSchema,
@@ -13,6 +14,7 @@ import {
   type InboundRoute,
   type Ivr,
   type Mailbox,
+  type MusicOnHold,
   type OutboundPattern,
   type OutboundRoute,
   type Prompt,
@@ -63,6 +65,7 @@ export function createDefaultModel(options: CreateDefaultModelOptions = {}): Pbx
     ringGroups: [],
     ivrs: [],
     prompts: [],
+    musicOnHold: [],
   });
 }
 
@@ -204,3 +207,26 @@ export function createPrompt(input: CreatePromptInput): Prompt {
     ...rest,
   });
 }
+
+type MusicOnHoldExtras = Partial<Omit<MusicOnHold, 'id' | 'name'>>;
+export type CreateMusicOnHoldInput = MusicOnHoldExtras & {
+  id?: string;
+  name: string;
+};
+
+export function createMusicOnHold(input: CreateMusicOnHoldInput): MusicOnHold {
+  const { id, name, ...rest } = input;
+  return musicOnHoldSchema.parse({
+    id: id ?? generateResourceId(),
+    name,
+    ...rest,
+  });
+}
+
+// Alias-friendly factory names.
+export const createMusicOnHoldClass = createMusicOnHold;
+export const createMoh = createMusicOnHold;
+export const createMohClass = createMusicOnHold;
+export type CreateMusicOnHoldClassInput = CreateMusicOnHoldInput;
+export type CreateMohInput = CreateMusicOnHoldInput;
+export type CreateMohClassInput = CreateMusicOnHoldInput;

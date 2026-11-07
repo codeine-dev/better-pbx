@@ -37,7 +37,7 @@ export function renderQueuesConf(model: PbxModel): string {
         'ringinuse = no',
         'maxlen = 0',
         'announce-frequency = 0',
-        'musicclass = default',
+        `musicclass = ${group.musicOnHoldClassId ?? 'default'}`,
         ...members,
       ],
     });

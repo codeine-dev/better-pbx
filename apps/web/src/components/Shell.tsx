@@ -10,6 +10,7 @@ const nav = [
   { to: '/ring-groups', label: 'Ring groups', icon: '○' },
   { to: '/ivrs', label: 'IVRs', icon: '☰' },
   { to: '/prompts', label: 'Prompts', icon: '♪' },
+  { to: '/music-on-hold', label: 'Music on hold', icon: '♫' },
   { to: '/voicemail', label: 'Voicemail', icon: '✉' },
   { to: '/security', label: 'Security', icon: '🛡' },
   { to: '/snapshots', label: 'Snapshots', icon: '⟳' },

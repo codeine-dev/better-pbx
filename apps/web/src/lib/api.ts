@@ -4,6 +4,7 @@ import type {
   InboundRoute,
   Ivr,
   IvrOption,
+  MusicOnHold,
   OutboundPattern,
   OutboundRoute,
   Prompt,
@@ -124,6 +125,11 @@ export const api = {
   createPrompt: (body: unknown) => apiFetch<Prompt>('/api/prompts', { method: 'POST', body: JSON.stringify(body) }),
   uploadPrompt: (body: unknown) => apiFetch<Prompt>('/api/prompts/upload', { method: 'POST', body: JSON.stringify(body) }),
   deletePrompt: (id: string) => apiFetch<{ ok: boolean }>(`/api/prompts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  musicOnHold: () => apiFetch<MusicOnHold[]>('/api/music-on-hold'),
+  createMusicOnHold: (body: unknown) => apiFetch<MusicOnHold>('/api/music-on-hold', { method: 'POST', body: JSON.stringify(body) }),
+  uploadMusicOnHold: (body: unknown) => apiFetch<MusicOnHold>('/api/music-on-hold/upload', { method: 'POST', body: JSON.stringify(body) }),
+  deleteMusicOnHold: (id: string) => apiFetch<{ ok: boolean }>(`/api/music-on-hold/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
 
 export type { Destination, IvrOption, OutboundPattern };

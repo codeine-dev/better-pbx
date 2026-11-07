@@ -138,6 +138,7 @@ export const ringGroupSchema = z.object({
   memberIds: z.array(resourceIdSchema).min(1, 'a ring group needs at least one member'),
   ringTime: z.number().int().min(5).max(300).default(20),
   destinationIfNoAnswer: destinationSchema,
+  musicOnHoldClassId: resourceIdSchema.optional(),
 });
 
 export type RingGroup = z.infer<typeof ringGroupSchema>;
@@ -194,3 +195,18 @@ export const promptSchema = z
   });
 
 export type Prompt = z.infer<typeof promptSchema>;
+
+export const musicOnHoldSchema = z.object({
+  id: resourceIdSchema,
+  name: displayNameSchema,
+});
+
+export type MusicOnHold = z.infer<typeof musicOnHoldSchema>;
+
+// Backwards/alias-friendly names.
+export const musicOnHoldClassSchema = musicOnHoldSchema;
+export type MusicOnHoldClass = MusicOnHold;
+export const mohSchema = musicOnHoldSchema;
+export type Moh = MusicOnHold;
+export const mohClassSchema = musicOnHoldSchema;
+export type MohClass = MusicOnHold;

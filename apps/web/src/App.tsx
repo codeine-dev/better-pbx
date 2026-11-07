@@ -13,6 +13,7 @@ import { InboundRoutesPage } from './pages/InboundRoutesPage';
 import { RingGroupsPage } from './pages/RingGroupsPage';
 import { IvrsPage } from './pages/IvrsPage';
 import { PromptsPage } from './pages/PromptsPage';
+import { MusicOnHoldPage } from './pages/MusicOnHoldPage';
 import { VoicemailPage } from './pages/VoicemailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { SecurityPage } from './pages/SecurityPage';
@@ -69,6 +70,7 @@ export function App() {
                         <Route path="/ring-groups" element={<RingGroupsPage />} />
                         <Route path="/ivrs" element={<IvrsPage />} />
                         <Route path="/prompts" element={<PromptsPage />} />
+                        <Route path="/music-on-hold" element={<MusicOnHoldPage />} />
                         <Route path="/voicemail" element={<VoicemailPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                         <Route path="/security" element={<SecurityPage />} />

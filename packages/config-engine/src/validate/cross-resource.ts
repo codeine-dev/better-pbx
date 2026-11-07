@@ -164,6 +164,7 @@ function checkCrossResource(model: PbxModel): ValidationIssue[] {
     ...model.ringGroups.map((resource, index) => ({ value: resource.id, path: `ringGroups[${index}].id` })),
     ...model.ivrs.map((resource, index) => ({ value: resource.id, path: `ivrs[${index}].id` })),
     ...model.prompts.map((resource, index) => ({ value: resource.id, path: `prompts[${index}].id` })),
+    ...model.musicOnHold.map((resource, index) => ({ value: resource.id, path: `musicOnHold[${index}].id` })),
   ];
   issues.push(...findDuplicates(ids, 'duplicate-id', 'resource ID'));
   issues.push(
@@ -227,6 +228,11 @@ function checkCrossResource(model: PbxModel): ValidationIssue[] {
       }
     });
     checkDestination(group.destinationIfNoAnswer, `ringGroups[${index}].destinationIfNoAnswer`, model, issues);
+    if (group.musicOnHoldClassId !== undefined && !model.musicOnHold.some((entry) => entry.id === group.musicOnHoldClassId)) {
+      issues.push(
+        issue('unknown-music-on-hold', `ringGroups[${index}].musicOnHoldClassId`, 'music on hold class does not exist'),
+      );
+    }
   }
 
   for (const [index, ivr] of model.ivrs.entries()) {
