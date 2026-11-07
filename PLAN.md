@@ -317,6 +317,7 @@ Mutable task state lives in `docs/progress/`. This section is the stable map of 
 | 7 | fail2ban operations, bans, PJSIP ACL, whitelist/blacklist, audit | 3, 5 | [`07-security.md`](docs/progress/phases/07-security.md) |
 | 8 | Snapshot UI, CDR and status, log viewer, backup/restore | 5, 6, 7 | [`08-observability.md`](docs/progress/phases/08-observability.md) |
 | 9 | Hardening, full Docker/SIP E2E, docs, release evidence | 0–8 | [`09-release.md`](docs/progress/phases/09-release.md) |
+| 10 | Web UI coverage of all core features, full configuration forms, Unifi-inspired dark console | 4, 5, 6, 7, 8 | [`10-web-ui.md`](docs/progress/phases/10-web-ui.md) |
 
 ### Phase gates
 

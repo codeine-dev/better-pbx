@@ -1,3 +1,17 @@
+import type {
+  Destination,
+  Extension,
+  InboundRoute,
+  Ivr,
+  IvrOption,
+  OutboundPattern,
+  OutboundRoute,
+  Prompt,
+  RingGroup,
+  Settings,
+  Trunk,
+} from '@better-pbx/shared';
+
 export interface ApiError extends Error {
   status: number;
   code?: string;
@@ -45,6 +59,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   return data as T;
 }
 
+type Patch<T> = Partial<T>;
+
 export const api = {
   health: () => apiFetch<{ status: string; version: string }>('/api/health'),
   setupStatus: () => apiFetch<{ setupRequired: boolean; initialized: boolean }>('/api/setup/status'),
@@ -52,8 +68,8 @@ export const api = {
   login: (body: unknown) => apiFetch<{ csrfToken: string; user: { id: string; username: string } }>('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () => apiFetch<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
   me: () => apiFetch<{ id: string; username: string; csrfToken: string }>('/api/auth/me'),
-  settings: () => apiFetch<unknown>('/api/settings'),
-  patchSettings: (body: unknown, etag?: string | null) =>
+  settings: () => apiFetch<Settings>('/api/settings'),
+  patchSettings: (body: Patch<Settings>, etag?: string | null) =>
     apiFetch<{ ok: boolean; commitSha: string; restartRequired: boolean }>('/api/settings', {
       method: 'PATCH',
       body: JSON.stringify(body),
@@ -68,13 +84,42 @@ export const api = {
   unban: (ip: string) => apiFetch<{ ok: boolean }>(`/api/security/bans/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
   audit: () => apiFetch<Array<{ id: number; createdAt: string; actor: string; action: string; target: string | null; commitSha: string | null }>>('/api/audit'),
   logs: (file: string, tail = 200) => apiFetch<{ lines: string[] }>(`/api/system/logs?file=${encodeURIComponent(file)}&tail=${tail}`),
-  extensions: () => apiFetch<Array<{ id: string; number: string; displayName: string; enabled: boolean }>>('/api/extensions'),
-  createExtension: (body: unknown) => apiFetch<Record<string, unknown>>('/api/extensions', { method: 'POST', body: JSON.stringify(body) }),
+  voicemailCounts: () => apiFetch<Record<string, number>>('/api/voicemail/counts'),
+
+  extensions: () => apiFetch<Array<Omit<Extension, 'secret'>>>('/api/extensions'),
+  createExtension: (body: unknown) => apiFetch<Extension & { secret?: string }>('/api/extensions', { method: 'POST', body: JSON.stringify(body) }),
+  patchExtension: (id: string, body: unknown) => apiFetch<Extension & { secret?: string }>(`/api/extensions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteExtension: (id: string) => apiFetch<{ ok: boolean }>(`/api/extensions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  trunks: () => apiFetch<Array<{ id: string; name: string; host: string; enabled: boolean }>>('/api/trunks'),
-  createTrunk: (body: unknown) => apiFetch<Record<string, unknown>>('/api/trunks', { method: 'POST', body: JSON.stringify(body) }),
+
+  trunks: () => apiFetch<Array<Omit<Trunk, 'password'>>>('/api/trunks'),
+  createTrunk: (body: unknown) => apiFetch<Trunk>(`/api/trunks`, { method: 'POST', body: JSON.stringify(body) }),
+  patchTrunk: (id: string, body: unknown) => apiFetch<Trunk>(`/api/trunks/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteTrunk: (id: string) => apiFetch<{ ok: boolean }>(`/api/trunks/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  outboundRoutes: () => apiFetch<Array<{ id: string; name: string; priority: number; trunkId: string; enabled: boolean }>>('/api/outbound-routes'),
-  createOutboundRoute: (body: unknown) => apiFetch<Record<string, unknown>>('/api/outbound-routes', { method: 'POST', body: JSON.stringify(body) }),
+
+  outboundRoutes: () => apiFetch<OutboundRoute[]>('/api/outbound-routes'),
+  createOutboundRoute: (body: unknown) => apiFetch<OutboundRoute>('/api/outbound-routes', { method: 'POST', body: JSON.stringify(body) }),
+  patchOutboundRoute: (id: string, body: unknown) => apiFetch<OutboundRoute>(`/api/outbound-routes/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteOutboundRoute: (id: string) => apiFetch<{ ok: boolean }>(`/api/outbound-routes/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  inboundRoutes: () => apiFetch<InboundRoute[]>('/api/inbound-routes'),
+  createInboundRoute: (body: unknown) => apiFetch<InboundRoute>('/api/inbound-routes', { method: 'POST', body: JSON.stringify(body) }),
+  patchInboundRoute: (id: string, body: unknown) => apiFetch<InboundRoute>(`/api/inbound-routes/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteInboundRoute: (id: string) => apiFetch<{ ok: boolean }>(`/api/inbound-routes/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  ringGroups: () => apiFetch<RingGroup[]>('/api/ring-groups'),
+  createRingGroup: (body: unknown) => apiFetch<RingGroup>('/api/ring-groups', { method: 'POST', body: JSON.stringify(body) }),
+  patchRingGroup: (id: string, body: unknown) => apiFetch<RingGroup>(`/api/ring-groups/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteRingGroup: (id: string) => apiFetch<{ ok: boolean }>(`/api/ring-groups/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  ivrs: () => apiFetch<Ivr[]>('/api/ivrs'),
+  createIvr: (body: unknown) => apiFetch<Ivr>('/api/ivrs', { method: 'POST', body: JSON.stringify(body) }),
+  patchIvr: (id: string, body: unknown) => apiFetch<Ivr>(`/api/ivrs/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteIvr: (id: string) => apiFetch<{ ok: boolean }>(`/api/ivrs/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  prompts: () => apiFetch<Prompt[]>('/api/prompts'),
+  createPrompt: (body: unknown) => apiFetch<Prompt>('/api/prompts', { method: 'POST', body: JSON.stringify(body) }),
+  uploadPrompt: (body: unknown) => apiFetch<Prompt>('/api/prompts/upload', { method: 'POST', body: JSON.stringify(body) }),
+  deletePrompt: (id: string) => apiFetch<{ ok: boolean }>(`/api/prompts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
+
+export type { Destination, IvrOption, OutboundPattern };

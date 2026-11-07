@@ -9,6 +9,12 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ExtensionsPage } from './pages/ExtensionsPage';
 import { TrunksPage } from './pages/TrunksPage';
 import { OutboundRoutesPage } from './pages/OutboundRoutesPage';
+import { InboundRoutesPage } from './pages/InboundRoutesPage';
+import { RingGroupsPage } from './pages/RingGroupsPage';
+import { IvrsPage } from './pages/IvrsPage';
+import { PromptsPage } from './pages/PromptsPage';
+import { VoicemailPage } from './pages/VoicemailPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { SnapshotsPage } from './pages/SnapshotsPage';
 import { LogsPage } from './pages/LogsPage';
@@ -59,6 +65,12 @@ export function App() {
                         <Route path="/extensions" element={<ExtensionsPage />} />
                         <Route path="/trunks" element={<TrunksPage />} />
                         <Route path="/outbound-routes" element={<OutboundRoutesPage />} />
+                        <Route path="/inbound-routes" element={<InboundRoutesPage />} />
+                        <Route path="/ring-groups" element={<RingGroupsPage />} />
+                        <Route path="/ivrs" element={<IvrsPage />} />
+                        <Route path="/prompts" element={<PromptsPage />} />
+                        <Route path="/voicemail" element={<VoicemailPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                         <Route path="/security" element={<SecurityPage />} />
                         <Route path="/snapshots" element={<SnapshotsPage />} />
                         <Route path="/logs" element={<LogsPage />} />

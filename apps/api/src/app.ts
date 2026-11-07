@@ -873,7 +873,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const prompt = createPrompt({
       name,
       kind: 'custom',
-      file: outPath,
+      file: `custom/${id}.wav`,
       originalName,
       durationMs: 0,
     } as unknown as Parameters<typeof createPrompt>[0]);
