@@ -90,6 +90,11 @@ export const api = {
   sipTraceToggle: (enabled: boolean) =>
     apiFetch<{ enabled: boolean; results?: Array<{ cmd: string; status: number; output: string }> }>('/api/system/sip-trace', { method: 'POST', body: JSON.stringify({ enabled }) }),
   voicemailCounts: () => apiFetch<Record<string, number>>('/api/voicemail/counts'),
+  tlsStatus: () => apiFetch<Record<string, unknown>>('/api/tls/status'),
+  tlsSelfSigned: () => apiFetch<Record<string, unknown>>('/api/tls/self-signed', { method: 'POST' }),
+  tlsUploadCert: (body: { cert: string; key: string }) => apiFetch<Record<string, unknown>>('/api/tls/certificate', { method: 'POST', body: JSON.stringify(body) }),
+  tlsAcme: (body: Record<string, unknown>) => apiFetch<Record<string, unknown>>('/api/tls/acme', { method: 'POST', body: JSON.stringify(body) }),
+  tlsRenew: () => apiFetch<Record<string, unknown>>('/api/tls/renew', { method: 'POST' }),
 
   extensions: () => apiFetch<Array<Omit<Extension, 'secret'>>>('/api/extensions'),
   createExtension: (body: unknown) => apiFetch<Extension & { secret?: string }>('/api/extensions', { method: 'POST', body: JSON.stringify(body) }),

@@ -189,6 +189,7 @@ ENV NODE_ENV=production \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
+        certbot \
         curl \
         fail2ban \
         git \

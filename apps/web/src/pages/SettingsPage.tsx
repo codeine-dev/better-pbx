@@ -8,9 +8,19 @@ export function SettingsPage() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ['settings'], queryFn: api.settings });
   const { data: mcp } = useQuery({ queryKey: ['mcp-status'], queryFn: api.mcpStatus });
+  const { data: tls, refetch: refetchTls } = useQuery({ queryKey: ['tls-status'], queryFn: api.tlsStatus });
   const [form, setForm] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [certPem, setCertPem] = useState('');
+  const [keyPem, setKeyPem] = useState('');
+  const [acmeChallenge, setAcmeChallenge] = useState('http-01');
+  const [acmeDomain, setAcmeDomain] = useState('');
+  const [acmeEmail, setAcmeEmail] = useState('');
+  const [acmeDnsProvider, setAcmeDnsProvider] = useState('');
+  const [acmeCredentials, setAcmeCredentials] = useState('');
+  const [tlsMsg, setTlsMsg] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (data) setForm(data);
@@ -204,6 +214,17 @@ export function SettingsPage() {
               }
             />{' '}
             TLS enabled
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.network.srtpEnabled}
+              onChange={(e) =>
+                setForm({ ...form, network: { ...form.network, srtpEnabled: e.target.checked } })
+              }
+            />{' '}
+            SRTP (media encryption) enabled
           </label>
         </div>
       </div>
@@ -422,6 +443,46 @@ headers:
                 )}
               </pre>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <span className="font-medium">TLS certificate</span>
+        </div>
+        <div className="card-body space-y-4">
+          {tlsMsg && <div className="text-sm text-[var(--muted)]">{tlsMsg}</div>}
+          <div className="text-sm text-[var(--muted)]">
+            Source: {String(tls?.source ?? 'unknown')} · Cert: {tls?.hasCert ? 'present' : 'missing'} · Key: {tls?.hasKey ? 'present' : 'missing'}
+            {tls?.cert ? ` · expires ${String((tls.cert as Record<string, unknown>).validTo)}` : ''}
+          </div>
+          <div className="flex gap-2">
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsSelfSigned(); await refetchTls(); setTlsMsg('Self-signed certificate generated.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Generate self-signed</button>
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsRenew(); await refetchTls(); setTlsMsg('Renewal attempted.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Renew (ACME)</button>
+          </div>
+          <div className="space-y-2">
+            <label className="label">Certificate PEM</label>
+            <textarea className="input" rows={4} value={certPem} onChange={(e) => setCertPem(e.target.value)} />
+            <label className="label">Private key PEM</label>
+            <textarea className="input" rows={4} value={keyPem} onChange={(e) => setKeyPem(e.target.value)} />
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsUploadCert({ cert: certPem, key: keyPem }); await refetchTls(); setTlsMsg('Certificate installed.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Install manual certificate</button>
+          </div>
+          <div className="space-y-2">
+            <div className="font-medium text-sm">ACME (Let's Encrypt)</div>
+            <select className="select" value={acmeChallenge} onChange={(e) => setAcmeChallenge(e.target.value)}>
+              <option value="http-01">HTTP-01</option>
+              <option value="dns-01">DNS-01</option>
+            </select>
+            <input className="input" placeholder="Domain" value={acmeDomain} onChange={(e) => setAcmeDomain(e.target.value)} />
+            <input className="input" placeholder="Email" value={acmeEmail} onChange={(e) => setAcmeEmail(e.target.value)} />
+            {acmeChallenge === 'dns-01' && (
+              <>
+                <input className="input" placeholder="DNS provider (e.g. cloudflare)" value={acmeDnsProvider} onChange={(e) => setAcmeDnsProvider(e.target.value)} />
+                <textarea className="input" rows={4} placeholder="Credentials ini" value={acmeCredentials} onChange={(e) => setAcmeCredentials(e.target.value)} />
+              </>
+            )}
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsAcme({ challenge: acmeChallenge, domain: acmeDomain, email: acmeEmail, dnsProvider: acmeDnsProvider, credentials: acmeCredentials }); await refetchTls(); setTlsMsg('ACME certificate acquired.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Acquire via ACME</button>
           </div>
         </div>
       </div>

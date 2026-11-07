@@ -1,7 +1,8 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, relative, extname } from 'node:path';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes, createHash, X509Certificate, createPrivateKey } from 'node:crypto';
 import yaml from 'js-yaml';
 import { resolveConfig, type ApiConfig } from './config.js';
 import { openDb } from './db.js';
@@ -30,6 +31,7 @@ export interface BuildAppOptions {
   commandRunner?: CommandRunner;
   internalToken?: string;
   mcpToken?: string;
+  tlsScheduler?: boolean;
 }
 
 interface SessionRow {
@@ -55,6 +57,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const config = resolveConfig(overrides);
   mkdirSync(config.dataDir, { recursive: true });
   mkdirSync(config.runtimeDir, { recursive: true });
+  mkdirSync(join(config.runtimeDir, 'tls'), { recursive: true });
 
   const dbWrap = openDb(config.dbPath);
   const db = dbWrap.db;
@@ -88,6 +91,63 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const resolvedMcpToken = readFileSync(mcpTokenPath, 'utf8').trim();
 
   const startedAt = Date.now();
+  const tlsDir = join(config.runtimeDir, 'tls');
+  const tlsCertPath = join(tlsDir, 'sip.crt');
+  const tlsKeyPath = join(tlsDir, 'sip.key');
+  const tlsSourcePath = join(tlsDir, 'source.json');
+  const letsencryptDir = join(config.runtimeDir, 'letsencrypt');
+
+  function readTlsSource(): Record<string, unknown> {
+    if (!existsSync(tlsSourcePath)) return { source: 'self-signed' };
+    try {
+      return JSON.parse(readFileSync(tlsSourcePath, 'utf8')) as Record<string, unknown>;
+    } catch {
+      return { source: 'self-signed' };
+    }
+  }
+  function writeTlsSource(src: Record<string, unknown>): void {
+    mkdirSync(tlsDir, { recursive: true });
+    writeFileSync(tlsSourcePath, JSON.stringify(src, null, 2) + '\n', { mode: 0o600 });
+  }
+  function tlsStatus(): Record<string, unknown> {
+    const source = readTlsSource();
+    let certInfo: Record<string, unknown> | null = null;
+    if (existsSync(tlsCertPath)) {
+      try {
+        const cert = new X509Certificate(readFileSync(tlsCertPath, 'utf8'));
+        certInfo = {
+          subject: cert.subject,
+          issuer: cert.issuer,
+          validFrom: cert.validFrom,
+          validTo: cert.validTo,
+        };
+      } catch {
+        certInfo = null;
+      }
+    }
+    return {
+      source: source.source ?? 'self-signed',
+      hasCert: existsSync(tlsCertPath),
+      hasKey: existsSync(tlsKeyPath),
+      cert: certInfo,
+      domain: source.domain ?? null,
+      challenge: source.challenge ?? null,
+      autoRenew: source.autoRenew ?? false,
+      email: source.email ?? null,
+    };
+  }
+  function applyCertFiles(cert: string, key: string): void {
+    mkdirSync(tlsDir, { recursive: true });
+    writeFileSync(tlsCertPath, cert, { mode: 0o640 });
+    writeFileSync(tlsKeyPath, key, { mode: 0o600 });
+  }
+  function reloadPjsipSafe(): void {
+    try {
+      asterisk.reloadPjsip();
+    } catch {
+      // ignore
+    }
+  }
   const app = Fastify({ logger: options.logger ?? false, bodyLimit: 20 * 1024 * 1024 });
   let sipTraceEnabled = false;
 
@@ -400,6 +460,182 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
     }, model);
     return { ok: true, commitSha: result.commitSha, restartRequired: result.restartRequired };
+  });
+
+  // TLS certificate management
+  app.get('/api/tls/status', async (req) => {
+    requireAuth(req);
+    return tlsStatus();
+  });
+
+  app.post('/api/tls/self-signed', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    execFileSync('openssl', [
+      'req', '-x509', '-newkey', 'rsa:3072', '-sha256', '-nodes', '-days', '825',
+      '-keyout', tlsKeyPath,
+      '-out', tlsCertPath,
+      '-subj', '/CN=better-pbx',
+      '-addext', 'subjectAltName=DNS:better-pbx',
+    ], { stdio: 'ignore' });
+    execFileSync('chmod', ['0600', tlsKeyPath]);
+    execFileSync('chmod', ['0640', tlsCertPath]);
+    writeTlsSource({ source: 'self-signed', autoRenew: false, acquiredAt: new Date().toISOString() });
+    reloadPjsipSafe();
+    recordAudit(db, { actor: user.username, action: 'tls-self-signed', target: 'tls', details: {} });
+    return tlsStatus();
+  });
+
+  app.post('/api/tls/certificate', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const body = req.body as { cert?: string; key?: string };
+    const cert = String(body?.cert ?? '').trim();
+    const key = String(body?.key ?? '').trim();
+    if (!cert.includes('BEGIN CERTIFICATE') || !key.includes('PRIVATE KEY')) {
+      throw badRequest('invalid PEM certificate or key');
+    }
+    let parsedCert: X509Certificate;
+    let parsedKey: ReturnType<typeof createPrivateKey>;
+    try {
+      parsedCert = new X509Certificate(cert);
+      parsedKey = createPrivateKey(key);
+    } catch {
+      throw badRequest('invalid PEM certificate or key');
+    }
+    // verify key matches cert
+    try {
+      const certPub = parsedCert.publicKey.export({ type: 'spki', format: 'der' });
+      const keyPub = parsedKey.export({ type: 'spki', format: 'der' }) as Buffer;
+      if (!certPub.equals(keyPub)) throw new Error('mismatch');
+    } catch {
+      throw badRequest('certificate and key do not match');
+    }
+    applyCertFiles(cert + '\n', key + '\n');
+    writeTlsSource({ source: 'manual', autoRenew: false, acquiredAt: new Date().toISOString(), validTo: parsedCert.validTo });
+    reloadPjsipSafe();
+    recordAudit(db, { actor: user.username, action: 'tls-manual', target: 'tls', details: { subject: parsedCert.subject } });
+    return tlsStatus();
+  });
+
+  app.post('/api/tls/acme', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const body = req.body as {
+      challenge?: string;
+      domain?: string;
+      email?: string;
+      dnsProvider?: string;
+      credentials?: string;
+    };
+    const challenge = body?.challenge === 'dns-01' ? 'dns-01' : 'http-01';
+    const domain = String(body?.domain ?? '').trim();
+    const email = String(body?.email ?? '').trim();
+    if (!domain) throw badRequest('domain is required');
+    if (!email || !email.includes('@')) throw badRequest('valid email is required');
+    const dnsProvider = String(body?.dnsProvider ?? '').trim();
+    if (challenge === 'dns-01' && !dnsProvider) throw badRequest('dnsProvider is required for dns-01');
+
+    mkdirSync(letsencryptDir, { recursive: true });
+    const credsPath = join(tlsDir, 'acme-credentials.ini');
+    if (challenge === 'dns-01' && body?.credentials) {
+      writeFileSync(credsPath, String(body.credentials), { mode: 0o600 });
+    }
+
+    const args = [
+      'certonly', '--non-interactive', '--agree-tos',
+      '-m', email,
+      '-d', domain,
+      '--cert-name', 'better-pbx',
+      '--config-dir', letsencryptDir,
+      '--work-dir', join(letsencryptDir, 'work'),
+      '--logs-dir', join(letsencryptDir, 'logs'),
+    ];
+    if (challenge === 'http-01') {
+      args.push('--standalone', '--http-01-port', '80');
+    } else {
+      args.push(`--dns-${dnsProvider}`, `--dns-${dnsProvider}-credentials`, credsPath);
+    }
+
+    let out = '';
+    try {
+      out = execFileSync('certbot', args, { encoding: 'utf8', timeout: 300000, stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) {
+      const err = e as { stderr?: string; stdout?: string; message?: string };
+      throw badRequest(`ACME failed: ${err.stderr || err.stdout || err.message || 'unknown error'}`);
+    }
+
+    const liveDir = join(letsencryptDir, 'live', 'better-pbx');
+    const certFile = join(liveDir, 'fullchain.pem');
+    const keyFile = join(liveDir, 'privkey.pem');
+    if (!existsSync(certFile) || !existsSync(keyFile)) {
+      throw badRequest('ACME did not produce certificate files');
+    }
+    applyCertFiles(readFileSync(certFile, 'utf8'), readFileSync(keyFile, 'utf8'));
+    let validTo: string | null = null;
+    try {
+      validTo = new X509Certificate(readFileSync(certFile, 'utf8')).validTo;
+    } catch {
+      validTo = null;
+    }
+    writeTlsSource({
+      source: 'acme',
+      challenge,
+      domain,
+      email,
+      dnsProvider: dnsProvider || null,
+      autoRenew: true,
+      acquiredAt: new Date().toISOString(),
+      validTo,
+      configDir: letsencryptDir,
+    });
+    reloadPjsipSafe();
+    recordAudit(db, { actor: user.username, action: 'tls-acme', target: 'tls', details: { domain, challenge } });
+    return { ...tlsStatus(), output: out };
+  });
+
+  app.post('/api/tls/renew', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const source = readTlsSource();
+    if (source.source !== 'acme') throw badRequest('certificate is not managed by ACME');
+    const configDir = String(source.configDir ?? letsencryptDir);
+    let out = '';
+    try {
+      out = execFileSync('certbot', [
+        'renew', '--config-dir', configDir,
+        '--work-dir', join(configDir, 'work'),
+        '--logs-dir', join(configDir, 'logs'),
+        '--cert-name', 'better-pbx',
+      ], { encoding: 'utf8', timeout: 300000, stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) {
+      const err = e as { stderr?: string; stdout?: string; message?: string };
+      throw badRequest(`renewal failed: ${err.stderr || err.stdout || err.message || 'unknown error'}`);
+    }
+    const liveDir = join(configDir, 'live', 'better-pbx');
+    const certFile = join(liveDir, 'fullchain.pem');
+    const keyFile = join(liveDir, 'privkey.pem');
+    if (existsSync(certFile) && existsSync(keyFile)) {
+      applyCertFiles(readFileSync(certFile, 'utf8'), readFileSync(keyFile, 'utf8'));
+      let validTo: string | null = null;
+      try {
+        validTo = new X509Certificate(readFileSync(certFile, 'utf8')).validTo;
+      } catch {
+        validTo = null;
+      }
+      writeTlsSource({ ...source, validTo, lastRenewedAt: new Date().toISOString() });
+      reloadPjsipSafe();
+    }
+    recordAudit(db, { actor: user.username, action: 'tls-renew', target: 'tls', details: {} });
+    return { ...tlsStatus(), output: out };
   });
 
   // extensions
@@ -1580,6 +1816,42 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     clearInterval(sweeper);
     dbWrap.close();
   });
+
+
+  // Auto-renew ACME certificates when applicable.
+  if (options.tlsScheduler !== false && process.env.PBX_DISABLE_TLS_SCHEDULER !== '1') {
+    const runRenewal = () => {
+      try {
+        const source = readTlsSource();
+        if (source.source !== 'acme') return;
+        const validTo = source.validTo ? new Date(String(source.validTo)) : null;
+        const daysLeft = validTo ? (validTo.getTime() - Date.now()) / (24 * 60 * 60 * 1000) : 0;
+        if (validTo && daysLeft > 30) return;
+        const configDir = String(source.configDir ?? letsencryptDir);
+        execFileSync('certbot', [
+          'renew', '--config-dir', configDir,
+          '--work-dir', join(configDir, 'work'),
+          '--logs-dir', join(configDir, 'logs'),
+          '--cert-name', 'better-pbx',
+        ], { stdio: 'ignore', timeout: 300000 });
+        const liveDir = join(configDir, 'live', 'better-pbx');
+        const certFile = join(liveDir, 'fullchain.pem');
+        const keyFile = join(liveDir, 'privkey.pem');
+        if (existsSync(certFile) && existsSync(keyFile)) {
+          applyCertFiles(readFileSync(certFile, 'utf8'), readFileSync(keyFile, 'utf8'));
+          let vt: string | null = null;
+          try { vt = new X509Certificate(readFileSync(certFile, 'utf8')).validTo; } catch { vt = null; }
+          writeTlsSource({ ...source, validTo: vt, lastRenewedAt: new Date().toISOString() });
+          reloadPjsipSafe();
+        }
+      } catch {
+        // ignore renewal failures; will retry next cycle
+      }
+    };
+    const timer = setInterval(runRenewal, 12 * 60 * 60 * 1000);
+    // allow process to exit
+    if (typeof timer.unref === 'function') timer.unref();
+  }
 
   return app;
 }

@@ -17,7 +17,7 @@ function codecLines(codecs: readonly string[]): string[] {
   return ['disallow = all', ...codecs.map((codec) => `allow = ${codec}`)];
 }
 
-function extensionSections(extension: Extension): ConfigSection[] {
+function extensionSections(extension: Extension, srtpEnabled: boolean): ConfigSection[] {
   if (!extension.enabled) return [];
 
   const transport = extension.transport === 'tls' ? 'transport-tls' : 'transport-udp';
@@ -62,6 +62,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
         'force_rport = yes',
         'rewrite_contact = yes',
         'ice_support = no',
+        ...(srtpEnabled ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
         'allow_transfer = yes',
         `allow_subscribe = ${extension.voicemail.enabled ? 'yes' : 'no'}`,
         'send_rpid = no',
@@ -72,7 +73,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
   ];
 }
 
-function trunkSections(trunk: Trunk): ConfigSection[] {
+function trunkSections(trunk: Trunk, srtpEnabled: boolean): ConfigSection[] {
   if (!trunk.enabled) return [];
 
   const transport = trunk.transport === 'tls' ? 'transport-tls' : 'transport-udp';
@@ -124,6 +125,7 @@ function trunkSections(trunk: Trunk): ConfigSection[] {
       'force_rport = yes',
       'rewrite_contact = yes',
       'ice_support = no',
+      ...(srtpEnabled ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
       'send_pai = yes',
       'send_rpid = no',
       'identify_by = ip,auth_username,username',
@@ -223,12 +225,12 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
     .slice()
     .sort((a, b) => a.number.localeCompare(b.number, 'en'));
   for (const extension of extensions) {
-    sections.push(...extensionSections(extension));
+    sections.push(...extensionSections(extension, model.settings.network.srtpEnabled));
   }
 
   const trunks = model.trunks.slice().sort((a, b) => a.name.localeCompare(b.name, 'en'));
   for (const trunk of trunks) {
-    sections.push(...trunkSections(trunk));
+    sections.push(...trunkSections(trunk, model.settings.network.srtpEnabled));
   }
 
   return renderConfig(
