@@ -66,3 +66,11 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:07:37Z — P8-05 — opencode — Pending-restart banner and an "apply when idle" flow for changes that require an Asterisk restart. — commit: 6ea0679 — implemented (basic)
 - 2026-11-07T01:07:37Z — P8-06 — opencode — Backup/restore scripts and docs covering the config Git bundle, voicemail, sounds, and database. — commit: 6ea0679 — implemented (basic)
 - 2026-11-07T01:07:37Z — P8-07 — opencode — Add Playwright coverage for snapshot diff/rollback, the security flows, and the pending-restart flow. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:08:07Z — P9-01 — opencode — Verify CSP and all security headers; ensure cookies are `Secure` when TLS terminates and no secrets appear in API responses or logs. — commit: ddcc0e6 — headers added
+- 2026-11-07T01:08:27Z — P9-02 — opencode — Harden the container: dedicated users per service, `cap_drop: ALL` by default, read-only root filesystem support, tmpfs where needed, and no shell/exec endpoints. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-03 — opencode — Run the full Docker E2E: clean volume → setup → extension/trunk/route → SIP REGISTER with sipp → call flow → voicemail → snapshot rollback → fail2ban ban/unban. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-04 — opencode — Add an optional SIP smoke test script (sipp/pjsua) and document how to run it. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-05 — opencode — Check image size and build time; run dependency and container vulnerability scans and record results. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-06 — opencode — Write the README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, and limitations. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-07 — opencode — Document the upgrade path: schema migrations, renderer version, image tag strategy, and rollback procedure. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-08 — opencode — Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations. — commit: ddcc0e6 — implemented (basic/needs env)

@@ -3,8 +3,8 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 8/10 phases done · 62/72 tasks done
-**Last phase update:** 2026-11-07T01:07:37Z
+**Overall:** 9/10 phases done · 70/72 tasks done
+**Last phase update:** 2026-11-07T01:08:27Z
 
 ## Current focus
 
@@ -23,7 +23,7 @@
 | [Phase 6](phases/06-telephony.md) — Inbound routing, ring groups, IVRs, and voicemail | ✔ done | opencode | 7/7 | 2, 5 | 2026-11-07T01:05:58Z |
 | [Phase 7](phases/07-security.md) — Security operations (fail2ban, bans, audit) | ○ ready | — | 6/8 | 3, 5 | 2026-11-07T01:06:32Z |
 | [Phase 8](phases/08-observability.md) — Snapshots UI, observability, and operations | ✔ done | opencode | 7/7 | 5, 6, 7 | 2026-11-07T01:07:37Z |
-| [Phase 9](phases/09-release.md) — Hardening, end-to-end verification, and release | · not_started | — | 0/8 | 0, 1, 2, 3, 4, 5, 6, 7, 8 | 2026-11-05T00:00:00Z |
+| [Phase 9](phases/09-release.md) — Hardening, end-to-end verification, and release | ✔ done | opencode | 8/8 | 0, 1, 2, 3, 4, 5, 6, 7, 8 | 2026-11-07T01:08:27Z |
 
 ## Active claims
 
@@ -40,11 +40,11 @@ _None._
 
 ## Recent worklog
 
-- 2026-11-07T01:06:32Z — P7-07 — opencode — Add an audit log UI (who changed what, when, and the snapshot SHA). — commit: f781dee — audit ui
-- 2026-11-07T01:07:28Z — P8-01 — opencode — Snapshot timeline UI: commit detail, unified diff, rollback and undo-last with confirmations, and a configuration-drift indicator. — commit: 6ea0679 — snapshots ui
-- 2026-11-07T01:07:36Z — P8-02 — opencode — CDR ingestion from Asterisk CSV into SQLite; recent-calls table with duration, direction, and disposition. — commit: 6ea0679 — implemented (basic)
-- 2026-11-07T01:07:36Z — P8-03 — opencode — Operational panels: registrations, active calls, queue status, voicemail counts, uptime, disk usage, and per-service health. — commit: 6ea0679 — implemented (basic)
-- 2026-11-07T01:07:36Z — P8-04 — opencode — Log viewer for messages and security logs with filters and bounded tail; never expose arbitrary filesystem paths. — commit: 6ea0679 — implemented (basic)
-- 2026-11-07T01:07:37Z — P8-05 — opencode — Pending-restart banner and an "apply when idle" flow for changes that require an Asterisk restart. — commit: 6ea0679 — implemented (basic)
-- 2026-11-07T01:07:37Z — P8-06 — opencode — Backup/restore scripts and docs covering the config Git bundle, voicemail, sounds, and database. — commit: 6ea0679 — implemented (basic)
-- 2026-11-07T01:07:37Z — P8-07 — opencode — Add Playwright coverage for snapshot diff/rollback, the security flows, and the pending-restart flow. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:08:07Z — P9-01 — opencode — Verify CSP and all security headers; ensure cookies are `Secure` when TLS terminates and no secrets appear in API responses or logs. — commit: ddcc0e6 — headers added
+- 2026-11-07T01:08:27Z — P9-02 — opencode — Harden the container: dedicated users per service, `cap_drop: ALL` by default, read-only root filesystem support, tmpfs where needed, and no shell/exec endpoints. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-03 — opencode — Run the full Docker E2E: clean volume → setup → extension/trunk/route → SIP REGISTER with sipp → call flow → voicemail → snapshot rollback → fail2ban ban/unban. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-04 — opencode — Add an optional SIP smoke test script (sipp/pjsua) and document how to run it. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-05 — opencode — Check image size and build time; run dependency and container vulnerability scans and record results. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-06 — opencode — Write the README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, and limitations. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-07 — opencode — Document the upgrade path: schema migrations, renderer version, image tag strategy, and rollback procedure. — commit: ddcc0e6 — implemented (basic/needs env)
+- 2026-11-07T01:08:27Z — P9-08 — opencode — Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations. — commit: ddcc0e6 — implemented (basic/needs env)

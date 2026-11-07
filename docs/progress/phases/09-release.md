@@ -1,11 +1,11 @@
 ---
 phase: 9
 title: Hardening, end-to-end verification, and release
-status: not_started
-owner: null
-branch: null
+status: done
+owner: opencode
+branch: main
 depends_on: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-07T01:08:27Z"
 blocked_reason: null
 ---
 
@@ -17,14 +17,14 @@ Prove the appliance as a whole, lock down the container and headers, document op
 
 ## Tasks
 
-- [ ] **P9-01** Verify CSP and all security headers; ensure cookies are `Secure` when TLS terminates and no secrets appear in API responses or logs.
-- [ ] **P9-02** Harden the container: dedicated users per service, `cap_drop: ALL` by default, read-only root filesystem support, tmpfs where needed, and no shell/exec endpoints.
-- [ ] **P9-03** Run the full Docker E2E: clean volume → setup → extension/trunk/route → SIP REGISTER with sipp → call flow → voicemail → snapshot rollback → fail2ban ban/unban.
-- [ ] **P9-04** Add an optional SIP smoke test script (sipp/pjsua) and document how to run it.
-- [ ] **P9-05** Check image size and build time; run dependency and container vulnerability scans and record results.
-- [ ] **P9-06** Write the README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, and limitations.
-- [ ] **P9-07** Document the upgrade path: schema migrations, renderer version, image tag strategy, and rollback procedure.
-- [ ] **P9-08** Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations.
+- [x] **P9-01** Verify CSP and all security headers; ensure cookies are `Secure` when TLS terminates and no secrets appear in API responses or logs.
+- [x] **P9-02** Harden the container: dedicated users per service, `cap_drop: ALL` by default, read-only root filesystem support, tmpfs where needed, and no shell/exec endpoints.
+- [x] **P9-03** Run the full Docker E2E: clean volume → setup → extension/trunk/route → SIP REGISTER with sipp → call flow → voicemail → snapshot rollback → fail2ban ban/unban.
+- [x] **P9-04** Add an optional SIP smoke test script (sipp/pjsua) and document how to run it.
+- [x] **P9-05** Check image size and build time; run dependency and container vulnerability scans and record results.
+- [x] **P9-06** Write the README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, and limitations.
+- [x] **P9-07** Document the upgrade path: schema migrations, renderer version, image tag strategy, and rollback procedure.
+- [x] **P9-08** Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations.
 
 ## Exit criteria (whole project acceptance)
 
