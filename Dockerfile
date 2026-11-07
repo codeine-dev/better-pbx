@@ -155,9 +155,15 @@ COPY packages/test-fixtures/package.json packages/test-fixtures/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.base.json ./
+COPY packages/shared ./packages/shared
+COPY packages/config-engine ./packages/config-engine
 COPY apps/api ./apps/api
+COPY apps/web ./apps/web
 
-RUN pnpm --filter @better-pbx/api build \
+RUN pnpm --filter @better-pbx/shared build \
+    && pnpm --filter @better-pbx/config-engine build \
+    && pnpm --filter @better-pbx/api build \
+    && pnpm --filter @better-pbx/web build \
     && pnpm --filter @better-pbx/api deploy --prod --legacy /out \
     && rm -rf /out/src /out/tsconfig.json /out/tsconfig.build.json
 
@@ -248,6 +254,7 @@ COPY docker/scripts/pbx-ban /usr/local/bin/pbx-ban
 COPY docker/scripts/healthcheck.mjs /opt/better-pbx/healthcheck.mjs
 
 COPY --from=api-builder /out /opt/better-pbx/api
+COPY --from=api-builder /build/apps/web/dist /opt/better-pbx/web/dist
 
 RUN set -eux; \
     chmod 0755 \
