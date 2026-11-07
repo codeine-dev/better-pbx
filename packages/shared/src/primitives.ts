@@ -60,6 +60,7 @@ export function isCidr(value: string): boolean {
 export function isCatchAllCidr(value: string): boolean {
   return (
     value === '0.0.0.0/0' ||
+    value === '0.0.0.0/0.0.0.0' ||
     value === '0.0.0.0' ||
     value === '::/0' ||
     value === '::' ||

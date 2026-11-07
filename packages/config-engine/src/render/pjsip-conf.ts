@@ -56,6 +56,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
         `auth = ${extensionAuth(extension.id)}`,
         `aors = ${extensionAor(extension.id)}`,
         `callerid = "${name}" <${callerId}>`,
+        'acl = global-acl',
         'direct_media = no',
         'rtp_symmetric = yes',
         'force_rport = yes',
@@ -116,6 +117,7 @@ function trunkSections(trunk: Trunk): ConfigSection[] {
       ...(trunk.fromUser === undefined ? [] : [`from_user = ${trunk.fromUser}`]),
       ...(trunk.fromDomain === undefined ? [] : [`from_domain = ${trunk.fromDomain}`]),
       ...(trunk.callerId === undefined ? [] : [`callerid = ${trunk.callerId}`]),
+      'acl = global-acl',
       'direct_media = no',
       'rtp_symmetric = yes',
       'force_rport = yes',
@@ -236,9 +238,5 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
       'endpoint exists. Legacy chan_sip is not built or configured.',
     ],
     sections,
-    [
-      '; Runtime-only ACL: regenerated from the model whitelist/blacklist plus active bans.',
-      `#include ${paths.dataDir}/runtime/pjsip-acl.conf`,
-    ],
   );
 }

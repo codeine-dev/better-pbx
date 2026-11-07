@@ -8,7 +8,7 @@
 
 ## Current focus
 
-- Next ready phase: [Phase 2](phases/02-config-engine.md) — Configuration model and renderer
+- [Phase 2](phases/02-config-engine.md) — Configuration model and renderer — owner: `opencode`
 
 ## Phases
 
@@ -16,7 +16,7 @@
 | --- | --- | --- | --- | --- | --- |
 | [Phase 0](phases/00-scaffold.md) — Repository scaffold and decisions | ✔ done | opencode | 5/5 | — | 2026-11-06T00:11:17Z |
 | [Phase 1](phases/01-runtime.md) — Asterisk runtime image and boot | ✔ done | opencode | 8/8 | 0 | 2026-11-06T00:58:39Z |
-| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ○ ready | — | 2/8 | 1 | 2026-11-06T23:52:44Z |
+| [Phase 2](phases/02-config-engine.md) — Configuration model and renderer | ◐ in_progress | opencode | 2/8 | 1 | 2026-11-06T23:52:44Z |
 | [Phase 3](phases/03-api-core.md) — API core, apply pipeline, and snapshots | · not_started | — | 0/9 | 2 | 2026-11-05T00:00:00Z |
 | [Phase 4](phases/04-frontend-shell.md) — Frontend shell and setup wizard | · not_started | — | 0/6 | 3 | 2026-11-05T00:00:00Z |
 | [Phase 5](phases/05-core-crud.md) — Extensions, trunks, and outbound routing | · not_started | — | 0/6 | 2, 3, 4 | 2026-11-05T00:00:00Z |
@@ -27,7 +27,9 @@
 
 ## Active claims
 
-_None._
+| Task | Phase | Agent | Started | Lease until | Note |
+| --- | --- | --- | --- | --- | --- |
+| P2-03 | 2 | opencode | 2026-11-06T23:52:44Z | 2026-11-07T07:52:44Z | security policy, ACL generation, and render-time enforcement |
 
 ## Blocked
 
@@ -35,7 +37,6 @@ _None._
 
 ## Ready to claim
 
-- **P2-03** — Implement the security policy: endpoint auth, trunk trust, codec allow-list, catch-all route rejection, premium prefix policy, secret strength, CIDR validation, ACL generation. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
 - **P2-04** — Implement the dialplan pattern parser/validator (`_N`, `_X`, `_Z`, ranges, `.`, `!`, literals), conflict/overlap detection, and emergency-route generation. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
 - **P2-05** — Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_
 - **P2-06** — Create the complete golden fixture covering every feature and snapshot every rendered file. _([Phase 2](phases/02-config-engine.md) — Configuration model and renderer)_

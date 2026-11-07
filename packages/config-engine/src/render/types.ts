@@ -1,5 +1,7 @@
 import type { PbxModel } from '@better-pbx/shared';
 
+import type { SecurityPolicyOptions } from '../policy/security.js';
+
 /**
  * Paths embedded in rendered configuration. Production uses the appliance defaults; the
  * throwaway-Asterisk validator overrides them so it never touches real state.
@@ -34,6 +36,8 @@ export interface RenderInput {
   model: PbxModel;
   runtime?: RuntimeState;
   options?: RenderOptions;
+  /** One-time overrides, e.g. an audited catch-all confirmation. Off by default. */
+  policy?: SecurityPolicyOptions;
 }
 
 /** A rendered file keyed by its path relative to the configuration repository root. */

@@ -26,7 +26,7 @@ export function sortRecord(files: Record<string, string>): Record<string, string
 export function renderAsteriskTree(model: PbxModel, options: RenderOptions = {}): Record<string, string> {
   const paths = resolvePaths(options);
   return sortRecord({
-    ...renderSafetyFiles(),
+    ...renderSafetyFiles(paths),
     'asterisk/asterisk.conf': renderAsteriskConf(paths),
     'asterisk/cdr.conf': renderCdrConf(),
     'asterisk/extensions.conf': renderExtensionsConf(model),

@@ -1,17 +1,22 @@
 import { renderConfig } from './config-format.js';
+import type { RenderPaths } from './types.js';
 
 /**
  * Files that exist only to keep a feature disabled or at a safe default. They are rendered rather
  * than baked into the image so the configuration snapshot is complete and reviewable.
  */
-export function renderSafetyFiles(): Record<string, string> {
+export function renderSafetyFiles(paths: RenderPaths): Record<string, string> {
   return {
     'asterisk/acl.conf': renderConfig(
       [
-        'BetterPBX named ACLs. SIP ACLs are generated in /data/runtime/pjsip-acl.conf instead;',
-        'this file exists so core ACL consumers have a valid, empty configuration.',
+        'BetterPBX named ACLs.',
+        '',
+        'The global-acl section is generated from the model whitelist/blacklist plus active bans and',
+        'lives under the runtime directory, outside Git, because bans change without a snapshot.',
+        'PJSIP endpoints reference it with `acl = global-acl`.',
       ],
       [],
+      [`#include ${paths.dataDir}/runtime/pjsip-acl.conf`],
     ),
     'asterisk/ari.conf': renderConfig(
       ['ARI is deliberately disabled. The admin API is the only configuration surface.'],
