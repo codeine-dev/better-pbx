@@ -126,6 +126,45 @@ describe('integration: internal bans', () => {
   });
 });
 
+describe('integration: phase 5 resources', () => {
+  it('creates an extension and renders pjsip/extensions', async () => {
+    const { dataDir, tokenPath } = makeDataDir();
+    const app = buildApp({ logger: false, dataDir, setupTokenPath: tokenPath, commandRunner: fakeRunner });
+    const setup = await app.inject({ method: 'POST', url: '/api/setup', payload: { setupCode: 'SETUP-CODE', username: 'admin', password: 'password123' } });
+    const cookie = setup.headers['set-cookie'];
+    const csrf = setup.json().csrfToken;
+    const create = await app.inject({ method: 'POST', url: '/api/extensions', headers: { cookie, 'x-csrf-token': csrf }, payload: { number: '101', displayName: 'Alice' } });
+    expect(create.statusCode).toBe(200);
+    expect(create.json().secret).toBeTruthy();
+    const list = await app.inject({ method: 'GET', url: '/api/extensions', headers: { cookie } });
+    expect(list.json().length).toBe(1);
+    // secret masked in list
+    expect(list.json()[0].secret).toBeUndefined();
+    const cfg = await app.inject({ method: 'GET', url: '/api/system/config', headers: { cookie } });
+    expect(cfg.json().files['asterisk/pjsip.conf']).toContain('101');
+    expect(cfg.json().files['asterisk/extensions.conf']).toContain('101');
+    // delete
+    const id = create.json().id;
+    const del = await app.inject({ method: 'DELETE', url: `/api/extensions/${id}`, headers: { cookie, 'x-csrf-token': csrf } });
+    expect(del.statusCode).toBe(200);
+    await app.close();
+  });
+
+  it('blocks trunk deletion when used by a route', async () => {
+    const { dataDir, tokenPath } = makeDataDir();
+    const app = buildApp({ logger: false, dataDir, setupTokenPath: tokenPath, commandRunner: fakeRunner });
+    const setup = await app.inject({ method: 'POST', url: '/api/setup', payload: { setupCode: 'SETUP-CODE', username: 'admin', password: 'password123' } });
+    const cookie = setup.headers['set-cookie'];
+    const csrf = setup.json().csrfToken;
+    const trunk = await app.inject({ method: 'POST', url: '/api/trunks', headers: { cookie, 'x-csrf-token': csrf }, payload: { name: 't1', host: 'sip.example.com', username: 'user', password: 'secret1234567890' } });
+    const trunkId = trunk.json().id;
+    await app.inject({ method: 'POST', url: '/api/outbound-routes', headers: { cookie, 'x-csrf-token': csrf }, payload: { name: 'r1', trunkId, patterns: [{ match: '_9NXXXXXX', strip: 1, prepend: '' }] } });
+    const del = await app.inject({ method: 'DELETE', url: `/api/trunks/${trunkId}`, headers: { cookie, 'x-csrf-token': csrf } });
+    expect(del.statusCode).toBe(409);
+    await app.close();
+  });
+});
+
 afterEach(() => {
   for (const d of tempDirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
