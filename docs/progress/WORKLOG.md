@@ -49,3 +49,7 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:03:41Z — P6-01 — opencode — Inbound routes API/UI: DID or pattern matching, optional trunk filter, caller-ID filter, and a destination picker shared across features. — commit: 60cc6f8 — implemented basic
 - 2026-11-07T01:03:41Z — P6-02 — opencode — Ring groups: number, strategy (ringall/linear/rrmemory), members, ring time, and no-answer destination; render one Asterisk queue per group. — commit: 60cc6f8 — implemented basic
 - 2026-11-07T01:03:41Z — P6-03 — opencode — IVRs: greeting prompt, timeout, retries, digit options, invalid/timeout destinations, and direct dial; reject cycles. — commit: 60cc6f8 — implemented basic
+- 2026-11-07T01:05:26Z — P6-04 — opencode — Prompt management: built-in prompt browser/preview, upload, sox conversion to 8 kHz mono WAV, safe paths, duration and size limits. — commit: 8736991 — prompt upload endpoint
+- 2026-11-07T01:05:35Z — P6-05 — opencode — Voicemail: per-extension mailbox and PIN, MWI, `*97`/`*98` feature codes, `/data/voicemail` spool verification, and message counts in the UI. — commit: 7968f42 — voicemail counts
+- 2026-11-07T01:05:56Z — P6-06 — opencode — Implement and document remaining v1 feature codes (voicemail access, call pickup) with tests. — commit: cb747fb — feature codes + golden update
+- 2026-11-07T01:05:58Z — P6-07 — opencode — Add a full-PBX renderer integration test covering inbound routes, ring groups, IVRs, prompts, and voicemail together. — commit: cb747fb — golden covers full fixture
