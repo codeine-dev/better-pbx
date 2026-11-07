@@ -828,6 +828,50 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     recordAudit(db, { actor: user.username, action: 'create-prompt', target: prompt.id, commitSha: result.commitSha });
     return prompt;
   });
+  app.post('/api/prompts/upload', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const name = String(body.name ?? 'uploaded');
+    const originalName = typeof body.originalName === 'string' ? body.originalName : 'upload.wav';
+    const content = typeof body.content === 'string' ? body.content : '';
+    if (!content) throw badRequest('content (base64) required');
+    const buf = Buffer.from(content, 'base64');
+    if (buf.length === 0) throw badRequest('empty upload');
+    if (buf.length > 10 * 1024 * 1024) throw badRequest('file too large (max 10MB)');
+    const soundsDir = join(config.dataDir, 'sounds');
+    mkdirSync(soundsDir, { recursive: true });
+    const id = randomBytes(16).toString('hex');
+    const rawPath = join(soundsDir, `${id}.orig`);
+    const outPath = join(soundsDir, `${id}.wav`);
+    writeFileSync(rawPath, buf);
+    // convert via sox
+    const { execFileSync } = await import('node:child_process');
+    try {
+      execFileSync('sox', [rawPath, '-r', '8000', '-c', '1', outPath], { timeout: 30000 });
+    } catch {
+      // sox unavailable (tests): copy raw as wav
+      writeFileSync(outPath, buf);
+    }
+    // cleanup raw
+    try { rmSync(rawPath, { force: true }); } catch { void 0; }
+    const prompt = createPrompt({
+      name,
+      kind: 'custom',
+      file: outPath,
+      originalName,
+      durationMs: 0,
+    } as unknown as Parameters<typeof createPrompt>[0]);
+    const newModel = { ...model, prompts: [...model.prompts, prompt], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Upload prompt', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    recordAudit(db, { actor: user.username, action: 'upload-prompt', target: prompt.id, commitSha: result.commitSha });
+    return prompt;
+  });
+
   app.delete('/api/prompts/:id', async (req) => {
     const session = requireAuth(req);
     requireCsrf(req, session);
