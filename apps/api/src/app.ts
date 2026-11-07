@@ -1092,6 +1092,25 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
     sipTraceEnabled = enabled;
     const results: Array<{ cmd: string; status: number; output: string }> = [];
+    // Ensure the dedicated sip log channel exists even on volumes rendered before this
+    // feature shipped: patch logger.conf in place and make sure the file is present.
+    try {
+      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend } = await import('node:fs');
+      const loggerPath = join(config.configDir, 'asterisk', 'logger.conf');
+      if (fsExists(loggerPath)) {
+        const text = fsRead(loggerPath, 'utf8');
+        if (!/^\s*sip\b/m.test(text)) {
+          // Insert a sip channel line into the logfiles section.
+          const patched = text.replace(/(\[logfiles\]\s*\n)/, '$1sip => verbose,debug\n');
+          if (patched !== text) fsWrite(loggerPath, patched, 'utf8');
+          else fsAppend(loggerPath, '\nsip => verbose,debug\n');
+        }
+      }
+      const sipLog = join(config.dataDir, 'log', 'sip');
+      if (!fsExists(sipLog)) fsWrite(sipLog, '', { mode: 0o664 });
+    } catch {
+      void 0;
+    }
     try {
       if (enabled) {
         const v = asterisk.coreSetVerbose(5);
@@ -1119,6 +1138,25 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
     sipTraceEnabled = enabled;
     const results: Array<{ cmd: string; status: number; output: string }> = [];
+    // Ensure the dedicated sip log channel exists even on volumes rendered before this
+    // feature shipped: patch logger.conf in place and make sure the file is present.
+    try {
+      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend } = await import('node:fs');
+      const loggerPath = join(config.configDir, 'asterisk', 'logger.conf');
+      if (fsExists(loggerPath)) {
+        const text = fsRead(loggerPath, 'utf8');
+        if (!/^\s*sip\b/m.test(text)) {
+          // Insert a sip channel line into the logfiles section.
+          const patched = text.replace(/(\[logfiles\]\s*\n)/, '$1sip => verbose,debug\n');
+          if (patched !== text) fsWrite(loggerPath, patched, 'utf8');
+          else fsAppend(loggerPath, '\nsip => verbose,debug\n');
+        }
+      }
+      const sipLog = join(config.dataDir, 'log', 'sip');
+      if (!fsExists(sipLog)) fsWrite(sipLog, '', { mode: 0o664 });
+    } catch {
+      void 0;
+    }
     try {
       if (enabled) {
         const v = asterisk.coreSetVerbose(5);
