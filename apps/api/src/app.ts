@@ -1173,7 +1173,23 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       let n = 0;
       if (existsSync(dir)) {
         try {
-          n = readdirSync(dir).filter((f) => f.endsWith('.wav') || f.endsWith('.txt')).length;
+          const messageKeys = new Set<string>();
+          const walk = (current: string): void => {
+            for (const entry of readdirSync(current, { withFileTypes: true })) {
+              if (entry.isDirectory()) {
+                walk(join(current, entry.name));
+                continue;
+              }
+              if (!entry.isFile()) continue;
+              const lower = entry.name.toLowerCase();
+              if (!(lower.endsWith('.wav') || lower.endsWith('.txt') || lower.endsWith('.gsm') || lower.endsWith('.ulaw') || lower.endsWith('.alaw') || lower.endsWith('.sln') || lower.endsWith('.mp3') || lower.endsWith('.ogg'))) continue;
+              const dot = entry.name.lastIndexOf('.');
+              const stem = dot >= 0 ? entry.name.slice(0, dot) : entry.name;
+              messageKeys.add(current + '\u0000' + stem);
+            }
+          };
+          walk(dir);
+          n = messageKeys.size;
         } catch {
           n = 0;
         }
