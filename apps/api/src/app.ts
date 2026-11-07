@@ -1051,13 +1051,18 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const file = aliasMap[requested] ?? 'messages';
     const tail = Math.min(Math.max(Number(q.tail ?? 200), 1), 10000);
     const { existsSync, readFileSync } = await import('node:fs');
-    const logPath = join(config.dataDir, 'log', `${file}.log`);
+    const candidates = [
+      join(config.dataDir, 'log', `${file}.log`),
+      join(config.dataDir, 'log', file),
+    ];
+    const logPath = (candidates.find((p) => existsSync(p)) ?? candidates[0]) as string;
     if (!existsSync(logPath) && file === 'sip') {
       // Fall back to the messages log, surfacing only SIP-related lines so traces are
       // still visible when a dedicated sip.log has not been created yet.
-      const fallback = join(config.dataDir, 'log', 'messages.log');
-      if (existsSync(fallback)) {
-        const text = readFileSync(fallback, 'utf8');
+      const fallbackCandidates = [join(config.dataDir, 'log', 'messages.log'), join(config.dataDir, 'log', 'messages')];
+      const fallback = fallbackCandidates.find((p) => existsSync(p));
+      if (fallback) {
+        const text = readFileSync(fallback as string, 'utf8');
         const sipLines = text
           .split('\n')
           .filter((line) => /sip|<---|received|sending|register/i.test(line));
@@ -1086,17 +1091,25 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const body = (req.body as Record<string, unknown>) ?? {};
     const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
     sipTraceEnabled = enabled;
+    const results: Array<{ cmd: string; status: number; output: string }> = [];
     try {
       if (enabled) {
-        asterisk.coreSetVerbose(5);
-        asterisk.pjsipSetLogger(true);
+        const v = asterisk.coreSetVerbose(5);
+        results.push({ cmd: 'core set verbose 5', status: v.status, output: (v.stdout || v.stderr).trim() });
+        const d = asterisk.coreSetDebug(5);
+        results.push({ cmd: 'core set debug 5', status: d.status, output: (d.stdout || d.stderr).trim() });
+        const r = asterisk.loggerReload();
+        results.push({ cmd: 'module reload logger', status: r.status, output: (r.stdout || r.stderr).trim() });
+        const p = asterisk.pjsipSetLogger(true);
+        results.push({ cmd: 'pjsip set logger on', status: p.status, output: (p.stdout || p.stderr).trim() });
       } else {
-        asterisk.pjsipSetLogger(false);
+        const p = asterisk.pjsipSetLogger(false);
+        results.push({ cmd: 'pjsip set logger off', status: p.status, output: (p.stdout || p.stderr).trim() });
       }
     } catch {
       void 0;
     }
-    return { enabled: sipTraceEnabled };
+    return { enabled: sipTraceEnabled, results };
   });
 
   app.post('/api/system/sip-trace', async (req) => {
@@ -1105,17 +1118,25 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const body = (req.body as Record<string, unknown>) ?? {};
     const enabled = typeof body.enabled === 'boolean' ? body.enabled : true;
     sipTraceEnabled = enabled;
+    const results: Array<{ cmd: string; status: number; output: string }> = [];
     try {
       if (enabled) {
-        asterisk.coreSetVerbose(5);
-        asterisk.pjsipSetLogger(true);
+        const v = asterisk.coreSetVerbose(5);
+        results.push({ cmd: 'core set verbose 5', status: v.status, output: (v.stdout || v.stderr).trim() });
+        const d = asterisk.coreSetDebug(5);
+        results.push({ cmd: 'core set debug 5', status: d.status, output: (d.stdout || d.stderr).trim() });
+        const r = asterisk.loggerReload();
+        results.push({ cmd: 'module reload logger', status: r.status, output: (r.stdout || r.stderr).trim() });
+        const p = asterisk.pjsipSetLogger(true);
+        results.push({ cmd: 'pjsip set logger on', status: p.status, output: (p.stdout || p.stderr).trim() });
       } else {
-        asterisk.pjsipSetLogger(false);
+        const p = asterisk.pjsipSetLogger(false);
+        results.push({ cmd: 'pjsip set logger off', status: p.status, output: (p.stdout || p.stderr).trim() });
       }
     } catch {
       void 0;
     }
-    return { enabled: sipTraceEnabled };
+    return { enabled: sipTraceEnabled, results };
   });
 
   app.get('/api/system/queues', async (req) => {

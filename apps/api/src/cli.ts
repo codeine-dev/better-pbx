@@ -66,6 +66,10 @@ export class AsteriskCli {
     return this.runner(this.binary, ['-rx', `core set verbose ${level}`], { timeoutMs: 5000 });
   }
 
+  coreSetDebug(level: number): CommandResult {
+    return this.runner(this.binary, ['-rx', `core set debug ${level}`], { timeoutMs: 5000 });
+  }
+
   loggerReload(): CommandResult {
     return this.runner(this.binary, ['-rx', 'module reload logger'], { timeoutMs: 5000 });
   }

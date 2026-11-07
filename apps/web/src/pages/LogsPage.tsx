@@ -14,6 +14,7 @@ export function LogsPage() {
   const [file, setFile] = useState<LogFile>('messages');
   const [tail, setTail] = useState(300);
   const [live, setLive] = useState(true);
+  const [lastTraceResult, setLastTraceResult] = useState<string | null>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const queryClient = useQueryClient();
 
@@ -31,7 +32,12 @@ export function LogsPage() {
 
   const toggleTrace = useMutation({
     mutationFn: (enabled: boolean) => api.sipTraceToggle(enabled),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sip-trace'] }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['sip-trace'] });
+      if (data?.results) {
+        setLastTraceResult(data.results.map((r) => `${r.cmd}: [${r.status}] ${r.output}`).join('\n'));
+      }
+    },
   });
 
   const lines = data?.lines ?? [];
@@ -76,19 +82,26 @@ export function LogsPage() {
       </div>
 
       {file === 'sip' && (
-        <div className="flex flex-wrap items-center gap-3 rounded border border-slate-800 bg-slate-900/50 p-3 text-sm">
-          <span>SIP tracing: {traceStatus?.enabled ? 'ON' : 'OFF'}</span>
-          <button
-            className={`rounded px-3 py-1 ${traceStatus?.enabled ? 'bg-rose-600' : 'bg-emerald-600'} text-white`}
-            onClick={() => toggleTrace.mutate(!traceStatus?.enabled)}
-            disabled={toggleTrace.isPending}
-          >
-            {traceStatus?.enabled ? 'Stop trace' : 'Start trace'}
-          </button>
-          <span className="text-slate-400">
-            Enables the PJSIP logger; live traces stream below. Disable when finished to avoid logging secrets.
-          </span>
-        </div>
+        <>
+          <div className="flex flex-wrap items-center gap-3 rounded border border-slate-800 bg-slate-900/50 p-3 text-sm">
+            <span>SIP tracing: {traceStatus?.enabled ? 'ON' : 'OFF'}</span>
+            <button
+              className={`rounded px-3 py-1 ${traceStatus?.enabled ? 'bg-rose-600' : 'bg-emerald-600'} text-white`}
+              onClick={() => toggleTrace.mutate(!traceStatus?.enabled)}
+              disabled={toggleTrace.isPending}
+            >
+              {traceStatus?.enabled ? 'Stop trace' : 'Start trace'}
+            </button>
+            <span className="text-slate-400">
+              Enables the PJSIP logger; live traces stream below. Disable when finished to avoid logging secrets.
+            </span>
+          </div>
+          {lastTraceResult && (
+            <pre className="max-h-40 overflow-auto rounded border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300">
+              {lastTraceResult}
+            </pre>
+          )}
+        </>
       )}
 
       <pre

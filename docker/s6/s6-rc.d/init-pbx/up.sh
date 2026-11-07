@@ -116,7 +116,7 @@ if [ ! -s "$DATA/setup-token" ]; then
 fi
 
 # The security log must exist before fail2ban starts polling it.
-touch "$DATA/log/security" "$DATA/log/messages" "$DATA/log/queue_log"
+touch "$DATA/log/security" "$DATA/log/messages" "$DATA/log/queue_log" "$DATA/log/sip"
 
 # Custom prompts live under /data/sounds, but Asterisk's sound search path is image-owned.
 # Link the English (default) sound directory at the persistent upload directory.

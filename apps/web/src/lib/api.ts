@@ -86,7 +86,7 @@ export const api = {
   logs: (file: string, tail = 200) => apiFetch<{ lines: string[] }>(`/api/system/logs?file=${encodeURIComponent(file)}&tail=${tail}`),
   sipTraceStatus: () => apiFetch<{ enabled: boolean }>('/api/system/sip-trace'),
   sipTraceToggle: (enabled: boolean) =>
-    apiFetch<{ enabled: boolean }>('/api/system/sip-trace', { method: 'POST', body: JSON.stringify({ enabled }) }),
+    apiFetch<{ enabled: boolean; results?: Array<{ cmd: string; status: number; output: string }> }>('/api/system/sip-trace', { method: 'POST', body: JSON.stringify({ enabled }) }),
   voicemailCounts: () => apiFetch<Record<string, number>>('/api/voicemail/counts'),
 
   extensions: () => apiFetch<Array<Omit<Extension, 'secret'>>>('/api/extensions'),
