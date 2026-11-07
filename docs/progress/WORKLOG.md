@@ -53,3 +53,9 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:05:35Z — P6-05 — opencode — Voicemail: per-extension mailbox and PIN, MWI, `*97`/`*98` feature codes, `/data/voicemail` spool verification, and message counts in the UI. — commit: 7968f42 — voicemail counts
 - 2026-11-07T01:05:56Z — P6-06 — opencode — Implement and document remaining v1 feature codes (voicemail access, call pickup) with tests. — commit: cb747fb — feature codes + golden update
 - 2026-11-07T01:05:58Z — P6-07 — opencode — Add a full-PBX renderer integration test covering inbound routes, ring groups, IVRs, prompts, and voicemail together. — commit: cb747fb — golden covers full fixture
+- 2026-11-07T01:06:10Z — P7-01 — opencode — Generate fail2ban jail/filter/action from settings; add the custom `pbx-ban` action that calls the loopback internal API. — commit: 8709091 — templates present
+- 2026-11-07T01:06:10Z — P7-02 — opencode — Render the runtime PJSIP ACL include: whitelist permits, manual and automatic denies, safe fallback; reload PJSIP on change. — commit: 8709091 — runtime acl renderer
+- 2026-11-07T01:06:30Z — P7-03 — opencode — Bans API/UI: live bans with source/jail/expiry, unban, manual blacklist, whitelist override, and fail2ban status. — commit: f781dee — bans ui
+- 2026-11-07T01:06:30Z — P7-04 — opencode — Security page: fail2ban tuning, whitelist/blacklist CRUD with CIDR validation and conflict rejection, login lockout status, and security audit checks. — commit: f781dee — security page
+- 2026-11-07T01:06:32Z — P7-05 — opencode — Implement the expiry sweeper and startup reconciliation with fail2ban state so stale bans do not linger. — commit: 8709091 — sweeper exists
+- 2026-11-07T01:06:32Z — P7-07 — opencode — Add an audit log UI (who changed what, when, and the snapshot SHA). — commit: f781dee — audit ui
