@@ -1,11 +1,11 @@
 ---
 phase: 4
 title: Frontend shell and setup wizard
-status: not_started
+status: ready
 owner: null
-branch: null
+branch: main
 depends_on: [3]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-07T00:58:28Z"
 blocked_reason: null
 ---
 
@@ -17,11 +17,11 @@ Give the product a real admin experience: a forced first-run wizard, a secure lo
 
 ## Tasks
 
-- [ ] **P4-01** Build the Vite/React/Tailwind/shadcn base: router, query client, typed API client with CSRF and ETag/`If-Match` handling, shared Zod schemas from `packages/shared`.
-- [ ] **P4-02** Implement the login page, auth guard, forced `/setup` redirect, and the setup-code step; no other route is usable before setup completes.
-- [ ] **P4-03** Implement the multi-step setup wizard with detected defaults (timezone, locale, network interfaces, emergency numbers, language) and an "accept defaults" path; only the admin password is mandatory.
-- [ ] **P4-04** Build the app shell: sidebar, header, responsive navigation, light/dark theme, and a dashboard skeleton with service status cards and a setup checklist.
-- [ ] **P4-05** Add the shared UI primitives: error/toast/dialog/table/form components, loading skeletons, empty states, unsaved-change guard, and accessible focus handling.
+- [x] **P4-01** Build the Vite/React/Tailwind/shadcn base: router, query client, typed API client with CSRF and ETag/`If-Match` handling, shared Zod schemas from `packages/shared`.
+- [x] **P4-02** Implement the login page, auth guard, forced `/setup` redirect, and the setup-code step; no other route is usable before setup completes.
+- [x] **P4-03** Implement the multi-step setup wizard with detected defaults (timezone, locale, network interfaces, emergency numbers, language) and an "accept defaults" path; only the admin password is mandatory.
+- [x] **P4-04** Build the app shell: sidebar, header, responsive navigation, light/dark theme, and a dashboard skeleton with service status cards and a setup checklist.
+- [x] **P4-05** Add the shared UI primitives: error/toast/dialog/table/form components, loading skeletons, empty states, unsaved-change guard, and accessible focus handling.
 - [ ] **P4-06** Add Playwright coverage for first-run setup (happy path and validation errors), login, logout, and the forced-setup guard.
 
 ## Exit criteria
