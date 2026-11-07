@@ -35,7 +35,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
       ],
     },
     {
-      name: extensionAor(extension.id),
+      name: extensionAor(extension),
       lines: [
         'type = aor',
         `max_contacts = ${extension.maxContacts}`,
@@ -47,14 +47,14 @@ function extensionSections(extension: Extension): ConfigSection[] {
       ],
     },
     {
-      name: extensionEndpoint(extension.id),
+      name: extensionEndpoint(extension),
       lines: [
         'type = endpoint',
         `transport = ${transport}`,
         'context = internal',
         ...codecLines(extension.codecs),
         `auth = ${extensionAuth(extension.id)}`,
-        `aors = ${extensionAor(extension.id)}`,
+        `aors = ${extensionAor(extension)}`,
         `callerid = "${name}" <${callerId}>`,
         'acl = global-acl',
         'direct_media = no',
@@ -65,6 +65,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
         'allow_transfer = yes',
         'allow_subscribe = no',
         'send_rpid = no',
+        'identify_by = auth_username,username,ip',
         ...(extension.voicemail.enabled ? [`mailboxes = ${extension.number}@default`] : []),
       ],
     },
@@ -125,6 +126,7 @@ function trunkSections(trunk: Trunk): ConfigSection[] {
       'ice_support = no',
       'send_pai = yes',
       'send_rpid = no',
+      'identify_by = ip,auth_username,username',
     ],
   });
 
@@ -185,8 +187,7 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
       name: 'global',
       lines: [
         'type = global',
-        'endpoint_identifier_order = ip,username',
-        'max_forwards = 70',
+        'endpoint_identifier_order = ip,username,auth_username',        'max_forwards = 70',
         'user_agent = BetterPBX',
       ],
     },

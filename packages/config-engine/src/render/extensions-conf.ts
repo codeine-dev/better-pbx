@@ -41,7 +41,7 @@ function ensureHangup(actions: string[]): string[] {
 function extensionEntryFor(extension: Extension): string[] {
   const lines = [
     `exten => ${extension.number},1,NoOp(${sanitizeValue(`Call extension ${extension.displayName} <${extension.number}>`)})`,
-    same(`Dial(PJSIP/${extensionEndpoint(extension.id)},${EXTENSION_RING_SECONDS})`),
+    same(`Dial(PJSIP/${extensionEndpoint(extension)},${EXTENSION_RING_SECONDS})`),
   ];
 
   if (!extension.voicemail.enabled) {

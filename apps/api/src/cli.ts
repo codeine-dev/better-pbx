@@ -58,6 +58,14 @@ export class AsteriskCli {
     return this.runner(this.binary, ['-rx', 'core show version'], { timeoutMs: 5000 });
   }
 
+  pjsipShowContacts(): CommandResult {
+    return this.runner(this.binary, ['-rx', 'pjsip show contacts'], { timeoutMs: 5000 });
+  }
+
+  pjsipShowEndpoints(): CommandResult {
+    return this.runner(this.binary, ['-rx', 'pjsip show endpoints'], { timeoutMs: 5000 });
+  }
+
   pjsipSetLogger(enabled: boolean): CommandResult {
     return this.runner(this.binary, ['-rx', `pjsip set logger ${enabled ? 'on' : 'off'}`], { timeoutMs: 5000 });
   }

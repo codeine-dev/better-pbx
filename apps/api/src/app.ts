@@ -1044,7 +1044,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   // system
   app.get('/api/system/registrations', async (req) => {
     requireAuth(req);
-    const res = asterisk.ping(); // placeholder
+    const res = asterisk.pjsipShowContacts();
     return { output: res.stdout || res.stderr };
   });
 

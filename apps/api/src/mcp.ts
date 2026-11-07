@@ -139,8 +139,8 @@ export function createMcpServer(ctx: McpContext): McpServer {
     return text(lines.slice(-n));
   });
 
-  server.registerTool('pbx_system_registrations', { description: 'Asterisk registration output.', inputSchema: {} }, async () => {
-    const res = ctx.asterisk.ping();
+  server.registerTool('pbx_system_registrations', { description: 'Asterisk PJSIP registered contacts (extensions/trunks).', inputSchema: {} }, async () => {
+    const res = ctx.asterisk.pjsipShowContacts();
     return text(res.stdout || res.stderr);
   });
 

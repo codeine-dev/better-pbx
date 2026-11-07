@@ -25,7 +25,7 @@ export function renderQueuesConf(model: PbxModel): string {
       const extension = byId.get(memberId);
       return extension === undefined || !extension.enabled
         ? []
-        : [`member => PJSIP/${extensionEndpoint(extension.id)}`];
+        : [`member => PJSIP/${extensionEndpoint(extension)}`];
     });
 
     sections.push({

@@ -63,13 +63,18 @@ export function destinationActions(destination: Destination, lookup: ModelLookup
   }
 }
 
-/** PJSIP endpoint name for an extension. IDs are used so renumbering does not change auth names. */
-export function extensionEndpoint(id: string): string {
-  return `endpoint-${id}`;
+/**
+ * PJSIP endpoint/AOR names for an extension use the extension number. PJSIP's username
+ * identifier matches the SIP user part to the endpoint name, and the registrar looks up
+ * the AOR by the To-header user, so both must equal the dialed number. Auth names keep
+ * using the stable ID so renumbering does not change credentials.
+ */
+export function extensionEndpoint(extension: Extension): string {
+  return extension.number;
 }
 
-export function extensionAor(id: string): string {
-  return `aor-${id}`;
+export function extensionAor(extension: Extension): string {
+  return extension.number;
 }
 
 export function extensionAuth(id: string): string {
