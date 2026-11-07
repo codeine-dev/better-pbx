@@ -25,6 +25,9 @@ export function renderAsteriskConf(paths: RenderPaths): string {
       lines: [
         '; Privilege dropping is handled by the s6 run script, so Asterisk must not setuid itself.',
         '; That avoids a harmless but noisy capability warning.',
+        'astctlowner => asterisk',
+        'astctlgroup => pbx',
+        'astctlpermissions => 0660',
       ],
     },
   ];
