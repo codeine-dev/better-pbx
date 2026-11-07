@@ -963,8 +963,18 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const model = readModel(config);
     if (!model) throw setupRequired();
     const id = (req.params as { id: string }).id;
+    const prompt = model.prompts.find((entry) => entry.id === id);
+    if (!prompt) throw notFound('prompt not found');
+    if (model.ivrs.some((ivr) => ivr.greetingPromptId === id)) {
+      throw conflict('prompt is used by an IVR');
+    }
     const newModel = { ...model, prompts: model.prompts.filter((p) => p.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
     const result = await applyModel(newModel, { config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete prompt', runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })) }, model);
+    // remove the underlying sound file for custom prompts
+    if (prompt.kind === 'custom' && prompt.file.startsWith('custom/')) {
+      const soundPath = join(config.dataDir, 'sounds', prompt.file.slice('custom/'.length));
+      try { if (existsSync(soundPath)) rmSync(soundPath, { force: true }); } catch { void 0; }
+    }
     recordAudit(db, { actor: user.username, action: 'delete-prompt', target: id, commitSha: result.commitSha });
     return { ok: true, commitSha: result.commitSha };
   });
