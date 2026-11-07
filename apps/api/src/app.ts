@@ -1030,7 +1030,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const cdrPath = join(config.dataDir, 'log', 'cdr.csv');
     if (!existsSync(cdrPath)) return [];
     const text = readFileSync(cdrPath, 'utf8');
-    const lines = text.trim().split('\\n').slice(-100);
+    const lines = text.trim().split('\n').slice(-100);
     return lines.map((l) => ({ raw: l }));
   });
 
@@ -1059,14 +1059,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       if (existsSync(fallback)) {
         const text = readFileSync(fallback, 'utf8');
         const sipLines = text
-          .split('\\n')
+          .split('\n')
           .filter((line) => /sip|<---|received|sending|register/i.test(line));
         return { lines: sipLines.slice(-tail) };
       }
     }
     if (!existsSync(logPath)) return { lines: [] };
     const text = readFileSync(logPath, 'utf8');
-    const lines = text.split('\\n');
+    const lines = text.split('\n');
     return { lines: lines.slice(-tail) };
   });
 
