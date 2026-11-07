@@ -1,11 +1,11 @@
 ---
 phase: 5
 title: Extensions, trunks, and outbound routing
-status: not_started
+status: ready
 owner: null
-branch: null
+branch: main
 depends_on: [2, 3, 4]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-07T01:00:40Z"
 blocked_reason: null
 ---
 
@@ -17,11 +17,11 @@ Deliver the first complete telephony CRUD slice: a phone can register, a trunk c
 
 ## Tasks
 
-- [ ] **P5-01** Extensions API/UI: number, display name, codecs, secret generate/reveal-once/reset, transport, NAT settings, max contacts, voicemail fields, enable/disable; enforce unique numbers.
-- [ ] **P5-02** Trunks API/UI: registration vs IP authentication, provider CIDRs, transport, TLS/SRTP, codecs, caller ID, from user/domain, outbound proxy; reject unauthenticated or `0.0.0.0/0` trust.
-- [ ] **P5-03** Outbound routes API/UI: dialplan patterns, strip/prepend, caller ID override, trunk selection, emergency route setting, premium/unsafe confirmation; reject catch-all patterns by default.
-- [ ] **P5-04** Add apply/reload feedback, dialplan overlap and conflict warnings, and delete guards for resources still referenced by routes.
-- [ ] **P5-05** Update the dashboard checklist as extensions, trunks, and routes are added.
+- [x] **P5-01** Extensions API/UI: number, display name, codecs, secret generate/reveal-once/reset, transport, NAT settings, max contacts, voicemail fields, enable/disable; enforce unique numbers.
+- [x] **P5-02** Trunks API/UI: registration vs IP authentication, provider CIDRs, transport, TLS/SRTP, codecs, caller ID, from user/domain, outbound proxy; reject unauthenticated or `0.0.0.0/0` trust.
+- [x] **P5-03** Outbound routes API/UI: dialplan patterns, strip/prepend, caller ID override, trunk selection, emergency route setting, premium/unsafe confirmation; reject catch-all patterns by default.
+- [x] **P5-04** Add apply/reload feedback, dialplan overlap and conflict warnings, and delete guards for resources still referenced by routes.
+- [x] **P5-05** Update the dashboard checklist as extensions, trunks, and routes are added.
 - [ ] **P5-06** Add golden and API integration tests for create/edit/delete and the resulting rendered `pjsip.conf`/`extensions.conf`.
 
 ## Exit criteria
