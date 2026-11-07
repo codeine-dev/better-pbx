@@ -464,6 +464,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     return { ok: true, commitSha: result.commitSha, restartRequired: result.restartRequired };
   });
 
+  app.get('/api/tls/certificate', async (req) => {
+    requireAuth(req);
+    if (!existsSync(tlsCertPath)) throw notFound('certificate not found');
+    return { cert: readFileSync(tlsCertPath, 'utf8') };
+  });
+
   // TLS certificate management
   app.get('/api/tls/status', async (req) => {
     requireAuth(req);

@@ -9,6 +9,7 @@ export function SettingsPage() {
   const { data } = useQuery({ queryKey: ['settings'], queryFn: api.settings });
   const { data: mcp } = useQuery({ queryKey: ['mcp-status'], queryFn: api.mcpStatus });
   const { data: tls, refetch: refetchTls } = useQuery({ queryKey: ['tls-status'], queryFn: api.tlsStatus });
+  const { data: tlsCert, refetch: refetchTlsCert } = useQuery({ queryKey: ['tls-cert'], queryFn: api.tlsCertificate, enabled: !!tls?.hasCert });
   const [form, setForm] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -457,8 +458,40 @@ headers:
             Source: {String(tls?.source ?? 'unknown')} · Cert: {tls?.hasCert ? 'present' : 'missing'} · Key: {tls?.hasKey ? 'present' : 'missing'}
             {tls?.cert ? ` · expires ${String((tls.cert as Record<string, unknown>).validTo)}` : ''}
           </div>
+          {tlsCert?.cert && (
+            <div className="space-y-2">
+              <label className="label">Certificate (PEM) — share with softphones</label>
+              <textarea className="input font-mono text-xs" rows={8} readOnly value={tlsCert.cert} />
+              <div className="flex gap-2">
+                <button
+                  className="btn"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(tlsCert.cert);
+                    setTlsMsg('Copied certificate to clipboard.');
+                  }}
+                >
+                  Copy
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    const blob = new Blob([tlsCert.cert], { type: 'application/x-pem-file' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'better-pbx-cert.pem';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsSelfSigned(); await refetchTls(); setTlsMsg('Self-signed certificate generated.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Generate self-signed</button>
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsSelfSigned(); await refetchTls(); await refetchTlsCert(); setTlsMsg('Self-signed certificate generated.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Generate self-signed</button>
             <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsRenew(); await refetchTls(); setTlsMsg('Renewal attempted.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Renew (ACME)</button>
           </div>
           <div className="space-y-2">
@@ -466,7 +499,7 @@ headers:
             <textarea className="input" rows={4} value={certPem} onChange={(e) => setCertPem(e.target.value)} />
             <label className="label">Private key PEM</label>
             <textarea className="input" rows={4} value={keyPem} onChange={(e) => setKeyPem(e.target.value)} />
-            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsUploadCert({ cert: certPem, key: keyPem }); await refetchTls(); setTlsMsg('Certificate installed.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Install manual certificate</button>
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsUploadCert({ cert: certPem, key: keyPem }); await refetchTls(); await refetchTlsCert(); setTlsMsg('Certificate installed.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Install manual certificate</button>
           </div>
           <div className="space-y-2">
             <div className="font-medium text-sm">ACME (Let's Encrypt)</div>
@@ -482,7 +515,7 @@ headers:
                 <textarea className="input" rows={4} placeholder="Credentials ini" value={acmeCredentials} onChange={(e) => setAcmeCredentials(e.target.value)} />
               </>
             )}
-            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsAcme({ challenge: acmeChallenge, domain: acmeDomain, email: acmeEmail, dnsProvider: acmeDnsProvider, credentials: acmeCredentials }); await refetchTls(); setTlsMsg('ACME certificate acquired.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Acquire via ACME</button>
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsAcme({ challenge: acmeChallenge, domain: acmeDomain, email: acmeEmail, dnsProvider: acmeDnsProvider, credentials: acmeCredentials }); await refetchTls(); await refetchTlsCert(); setTlsMsg('ACME certificate acquired.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Acquire via ACME</button>
           </div>
         </div>
       </div>
