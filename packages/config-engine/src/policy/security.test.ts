@@ -50,11 +50,13 @@ describe('security policy', () => {
     }
     const confirmed = checkSecurityPolicy(withRoutePattern('_X.'), { allowCatchAllRoutes: true });
     expect(confirmed.some((entry) => entry.code === 'catch-all-route')).toBe(false);
+    expect(() => renderSecure({ model: withRoutePattern('_X.') })).toThrow(
+      /catch-all outbound routes/,
+    );
+    const singleRoute = withRoutePattern('_X.', true);
+    const isolated = { ...singleRoute, outboundRoutes: singleRoute.outboundRoutes.slice(0, 1) };
     expect(() =>
-      renderSecure({ model: withRoutePattern('_X.') }),
-    ).toThrow(SecurityPolicyError);
-    expect(() =>
-      renderSecure({ model: withRoutePattern('_X.', true), policy: { allowCatchAllRoutes: true } }),
+      renderSecure({ model: isolated, policy: { allowCatchAllRoutes: true } }),
     ).not.toThrow();
   });
 

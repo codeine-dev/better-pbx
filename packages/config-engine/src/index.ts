@@ -6,3 +6,4 @@ export * from './dialplan/index.js';
 export * from './policy/index.js';
 export * from './render/index.js';
 export * from './render-secure.js';
+export * from './validate/index.js';
