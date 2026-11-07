@@ -76,3 +76,17 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:08:27Z — P9-08 — opencode — Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations. — commit: ddcc0e6 — implemented (basic/needs env)
 - 2026-11-07T01:08:33Z — P7-06 — opencode — Add optional nftables bans when `NET_ADMIN` is present and explicitly enabled; keep the API-only ban path as the default. — commit: 7c5d59a — optional, not implemented
 - 2026-11-07T01:08:33Z — P7-08 — opencode — Add tests: synthetic security log lines against the filter, a real fail2ban ban/unban, ACL reload, whitelist prevents ban, blacklist forces ban. — commit: 7c5d59a — needs fail2ban env
+- 2026-11-07T11:21:01Z — P10-01 — opencode — Define a Unifi-inspired dark design system: color tokens, sidebar, cards, status badges, inputs, toasts, empty states; default dark mode. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-02 — opencode — Rework the app shell and navigation for all features (inbound routes, ring groups, IVRs, prompts, voicemail, settings) with active states and responsive layout. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-03 — opencode — Type the web API client from shared schemas and add missing CRUD/patch helpers. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-04 — opencode — Full extension configuration UI: secret generate/reveal-once/reset, codecs, transport, max contacts, remote phone, caller ID, enabled, and voicemail PIN/email. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-05 — opencode — Full trunk configuration UI: auth credentials, codecs, inbound mode, provider CIDRs, from user/domain, caller ID, transport, port, enabled. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-06 — opencode — Full outbound route configuration UI: priority, dialplan patterns (match/strip/prepend), caller ID, premium opt-in, trunk selection, enabled. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-07 — opencode — Inbound routes UI with DID, trunk filter, caller-ID filter, and a shared destination picker. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-08 — opencode — Ring groups UI: number, strategy, members, ring time, no-answer destination. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-09 — opencode — IVR UI: greeting prompt, timeout, retries, digit options, timeout/invalid destinations, direct dial, cycle validation. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-10 — opencode — Prompt management UI: browser, preview, upload with conversion status, delete. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-11 — opencode — Voicemail UI: per-extension PIN/email, message counts, MWI status. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-12 — opencode — Settings UI: region, network, security thresholds, whitelist/blacklist, voicemail limits. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-13 — opencode — Dashboard overview with resource counts, registration/health summaries, and quick actions. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-14 — opencode — Add Playwright coverage for the new configuration flows and the dark console shell. — commit: 36719ad — implemented

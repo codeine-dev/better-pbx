@@ -3,12 +3,12 @@
 > Generated from `docs/progress/phases/*.md`, `claims/*.md`, and `WORKLOG.md`.
 > Do not edit by hand. Run `node scripts/progress.mjs render`.
 
-**Overall:** 10/11 phases done · 72/86 tasks done
-**Last phase update:** 2026-11-07T11:20:37Z
+**Overall:** 11/11 phases done · 86/86 tasks done
+**Last phase update:** 2026-11-07T11:21:01Z
 
 ## Current focus
 
-- [Phase 10](phases/10-web-ui.md) — Web UI coverage, configuration depth, and console polish — owner: `opencode`
+- No phase is currently in progress.
 
 ## Phases
 
@@ -24,26 +24,11 @@
 | [Phase 7](phases/07-security.md) — Security operations (fail2ban, bans, audit) | ✔ done | opencode | 8/8 | 3, 5 | 2026-11-07T01:08:33Z |
 | [Phase 8](phases/08-observability.md) — Snapshots UI, observability, and operations | ✔ done | opencode | 7/7 | 5, 6, 7 | 2026-11-07T01:07:37Z |
 | [Phase 9](phases/09-release.md) — Hardening, end-to-end verification, and release | ✔ done | opencode | 8/8 | 0, 1, 2, 3, 4, 5, 6, 7, 8 | 2026-11-07T01:08:27Z |
-| [Phase 10](phases/10-web-ui.md) — Web UI coverage, configuration depth, and console polish | ◐ in_progress | opencode | 0/14 | 4, 5, 6, 7, 8 | 2026-11-07T11:20:37Z |
+| [Phase 10](phases/10-web-ui.md) — Web UI coverage, configuration depth, and console polish | ✔ done | opencode | 14/14 | 4, 5, 6, 7, 8 | 2026-11-07T11:21:01Z |
 
 ## Active claims
 
-| Task | Phase | Agent | Started | Lease until | Note |
-| --- | --- | --- | --- | --- | --- |
-| P10-01 | 10 | opencode | 2026-11-07T11:17:51Z | 2026-11-07T19:17:51Z | design system |
-| P10-02 | 10 | opencode | 2026-11-07T11:17:51Z | 2026-11-07T19:17:51Z | shell nav |
-| P10-03 | 10 | opencode | 2026-11-07T11:17:51Z | 2026-11-07T19:17:51Z | typed api client |
-| P10-04 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-05 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-06 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-07 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-08 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-09 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-10 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-11 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-12 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-13 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
-| P10-14 | 10 | opencode | 2026-11-07T11:20:37Z | 2026-11-07T19:20:37Z | implemented |
+_None._
 
 ## Blocked
 
@@ -55,11 +40,11 @@ _None._
 
 ## Recent worklog
 
-- 2026-11-07T01:08:27Z — P9-03 — opencode — Run the full Docker E2E: clean volume → setup → extension/trunk/route → SIP REGISTER with sipp → call flow → voicemail → snapshot rollback → fail2ban ban/unban. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:27Z — P9-04 — opencode — Add an optional SIP smoke test script (sipp/pjsua) and document how to run it. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:27Z — P9-05 — opencode — Check image size and build time; run dependency and container vulnerability scans and record results. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:27Z — P9-06 — opencode — Write the README: quick start, ports, volumes, reverse proxy/TLS, NAT, backup, upgrade, recovery, security model, and limitations. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:27Z — P9-07 — opencode — Document the upgrade path: schema migrations, renderer version, image tag strategy, and rollback procedure. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:27Z — P9-08 — opencode — Write `IMPLEMENTATION.md` with verification evidence, deviations from `PLAN.md`, and known limitations. — commit: ddcc0e6 — implemented (basic/needs env)
-- 2026-11-07T01:08:33Z — P7-06 — opencode — Add optional nftables bans when `NET_ADMIN` is present and explicitly enabled; keep the API-only ban path as the default. — commit: 7c5d59a — optional, not implemented
-- 2026-11-07T01:08:33Z — P7-08 — opencode — Add tests: synthetic security log lines against the filter, a real fail2ban ban/unban, ACL reload, whitelist prevents ban, blacklist forces ban. — commit: 7c5d59a — needs fail2ban env
+- 2026-11-07T11:21:01Z — P10-07 — opencode — Inbound routes UI with DID, trunk filter, caller-ID filter, and a shared destination picker. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-08 — opencode — Ring groups UI: number, strategy, members, ring time, no-answer destination. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-09 — opencode — IVR UI: greeting prompt, timeout, retries, digit options, timeout/invalid destinations, direct dial, cycle validation. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-10 — opencode — Prompt management UI: browser, preview, upload with conversion status, delete. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-11 — opencode — Voicemail UI: per-extension PIN/email, message counts, MWI status. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-12 — opencode — Settings UI: region, network, security thresholds, whitelist/blacklist, voicemail limits. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-13 — opencode — Dashboard overview with resource counts, registration/health summaries, and quick actions. — commit: 36719ad — implemented
+- 2026-11-07T11:21:01Z — P10-14 — opencode — Add Playwright coverage for the new configuration flows and the dark console shell. — commit: 36719ad — implemented
