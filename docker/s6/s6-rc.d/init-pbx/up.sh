@@ -34,7 +34,7 @@ for spool in dictate meetme monitor outgoing outgoing_done qlog recording system
 done
 install_dir 0770 asterisk pbx "$DATA/log/cdr-csv"
 install_dir 0770 root pbx "$DATA/fail2ban"
-install_dir 0750 asterisk pbx "$DATA/runtime/tls"
+install_dir 0770 asterisk pbx "$DATA/runtime/tls"
 install_dir 0770 asterisk pbx /run/asterisk
 install_dir 0755 root pbx /run/fail2ban
 
@@ -89,7 +89,7 @@ if [ ! -s "$DATA/runtime/tls/sip.key" ] || [ ! -s "$DATA/runtime/tls/sip.crt" ];
   log "generated self-signed SIP TLS certificate"
 fi
 chown asterisk:pbx "$DATA/runtime/tls" "$DATA/runtime/tls/sip.key" "$DATA/runtime/tls/sip.crt"
-chmod 0750 "$DATA/runtime/tls"
+chmod 0770 "$DATA/runtime/tls"
 chmod 0600 "$DATA/runtime/tls/sip.key"
 chmod 0640 "$DATA/runtime/tls/sip.crt"
 
@@ -160,7 +160,7 @@ chmod -R u+rwX,g+rX,o-rwx "$DATA/runtime"
 chmod 0770 "$DATA/log" "$DATA/voicemail" "$DATA/sounds"
 chmod -R u+rwX,g+rwX,o-rwx "$DATA/log" "$DATA/voicemail" "$DATA/sounds"
 chmod 0600 "$DATA/setup-token" "$DATA/runtime/internal-token"
-chmod 0750 "$DATA/runtime/tls"
+chmod 0770 "$DATA/runtime/tls"
 chmod 0600 "$DATA/runtime/tls/sip.key"
 chmod 0640 "$DATA/runtime/tls/sip.crt"
 

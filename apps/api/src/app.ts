@@ -138,8 +138,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   }
   function applyCertFiles(cert: string, key: string): void {
     mkdirSync(tlsDir, { recursive: true });
+    rmSync(tlsCertPath, { force: true });
+    rmSync(tlsKeyPath, { force: true });
     writeFileSync(tlsCertPath, cert, { mode: 0o640 });
-    writeFileSync(tlsKeyPath, key, { mode: 0o600 });
+    writeFileSync(tlsKeyPath, key, { mode: 0o640 });
   }
   function reloadPjsipSafe(): void {
     try {
@@ -473,6 +475,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     requireCsrf(req, session);
     const user = findUserById(session.userId);
     if (!user) throw unauthorized();
+    rmSync(tlsCertPath, { force: true });
+    rmSync(tlsKeyPath, { force: true });
     execFileSync('openssl', [
       'req', '-x509', '-newkey', 'rsa:3072', '-sha256', '-nodes', '-days', '825',
       '-keyout', tlsKeyPath,
@@ -480,7 +484,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       '-subj', '/CN=better-pbx',
       '-addext', 'subjectAltName=DNS:better-pbx',
     ], { stdio: 'ignore' });
-    execFileSync('chmod', ['0600', tlsKeyPath]);
+    execFileSync('chmod', ['0640', tlsKeyPath]);
     execFileSync('chmod', ['0640', tlsCertPath]);
     writeTlsSource({ source: 'self-signed', autoRenew: false, acquiredAt: new Date().toISOString() });
     reloadPjsipSafe();
