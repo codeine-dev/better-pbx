@@ -257,19 +257,23 @@ function sampleChoices(token: PatternToken): string[] {
 /** Generate representative strings a pattern can match. Used for overlap and premium detection. */
 export function patternSamples(raw: string, limit = 64): string[] {
   const parsed = parseDialplanPattern(raw);
-  let samples = [''];
-  for (const token of parsed.tokens) {
-    const choices = sampleChoices(token);
-    const next: string[] = [];
-    for (const sample of samples) {
-      for (const choice of choices) {
-        next.push(sample + choice);
-        if (next.length >= limit) break;
-      }
-      if (next.length >= limit) break;
+  const choices = parsed.tokens.map(sampleChoices);
+  const totalCombinations = choices.reduce((product, list) => product * list.length, 1);
+  const count = Math.min(limit, totalCombinations);
+  const samples: string[] = [];
+
+  // Mixed-radix enumeration distributes samples across every token instead of exhausting the
+  // earliest branch. Without this, a catch-all could hide behind the first few generated samples.
+  for (let index = 0; index < count; index += 1) {
+    let remainder = index;
+    let sample = '';
+    for (const list of choices) {
+      sample += list[remainder % list.length];
+      remainder = Math.floor(remainder / list.length);
     }
-    samples = next;
+    samples.push(sample);
   }
+
   return [...new Set(samples)].slice(0, limit);
 }
 

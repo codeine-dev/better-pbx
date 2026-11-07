@@ -9,7 +9,13 @@ import type {
   Trunk,
 } from '@better-pbx/shared';
 
-import { extension as extensionEntry, renderConfig, same, sanitizeValue, type ConfigSection } from './config-format.js';
+import {
+  extension as extensionEntry,
+  renderConfig,
+  same,
+  sanitizeValue,
+  type ConfigSection,
+} from './config-format.js';
 import {
   createLookup,
   destinationActions,
@@ -20,6 +26,7 @@ import {
   trunkEndpoint,
   type ModelLookup,
 } from '../model-lookup.js';
+import { emergencyDialplanEntries } from '../dialplan/emergency.js';
 
 const EXTENSION_RING_SECONDS = 30;
 
@@ -89,29 +96,6 @@ function outboundEntry(
     same(`Dial(PJSIP/\${OUTNUM}@${trunkEndpoint(trunk.id)},60)`),
     same('Hangup()'),
   ];
-}
-
-function emergencyEntries(model: PbxModel, lookup: ModelLookup): string[] {
-  const primaryRoute = model.outboundRoutes
-    .filter((route) => route.enabled)
-    .slice()
-    .sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name, 'en'))[0];
-  const trunk = primaryRoute === undefined ? undefined : lookup.trunksById.get(primaryRoute.trunkId);
-
-  return model.settings.region.emergencyNumbers.flatMap((number) => {
-    if (trunk === undefined || !trunk.enabled) {
-      return [
-        `exten => ${number},1,NoOp(${sanitizeValue(`Emergency call ${number}: no outbound trunk configured`)})`,
-        same('Playback(ss-noservice)'),
-        same('Hangup()'),
-      ];
-    }
-    return [
-      `exten => ${number},1,NoOp(${sanitizeValue(`Emergency call ${number} via ${trunk.name}`)})`,
-      same(`Dial(PJSIP/\${EXTEN}@${trunkEndpoint(trunk.id)},120)`),
-      same('Hangup()'),
-    ];
-  });
 }
 
 function inboundEntries(
@@ -195,7 +179,7 @@ function ivrSections(ivr: Ivr, prompt: Prompt | undefined, lookup: ModelLookup):
 function internalSection(model: PbxModel, lookup: ModelLookup): ConfigSection {
   const lines: string[] = [
     '; Emergency numbers are explicit and take precedence over every other internal pattern.',
-    ...emergencyEntries(model, lookup),
+    ...emergencyDialplanEntries(model),
     '',
     '; Feature codes.',
     'exten => *97,1,VoiceMailMain(${CALLERID(num)}@default)',
