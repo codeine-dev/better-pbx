@@ -164,6 +164,17 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     }
   });
 
+  app.addHook('onSend', async (req, reply) => {
+    reply.header('X-Content-Type-Options', 'nosniff');
+    reply.header('X-Frame-Options', 'DENY');
+    reply.header('Referrer-Policy', 'no-referrer');
+    reply.header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'");
+    const proto = (req.headers['x-forwarded-proto'] as string) ?? (req.protocol as string);
+    if (proto === 'https' || process.env.PBX_COOKIE_SECURE === '1') {
+      reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+  });
+
   // error handler
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof AppError) {
@@ -247,7 +258,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'INSERT INTO sessions (id, user_id, token_hash, csrf_token, expires_at, remember, created_at) VALUES (?,?,?,?,?,?,?)',
     ).run(randomBytes(16).toString('hex'), userId, tokenHash, csrfToken, expires, remember ? 1 : 0, new Date().toISOString());
 
-    reply.header('Set-Cookie', `pbx_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${remember ? 604800 : 43200}`);
+    reply.header('Set-Cookie', `pbx_session=${token}; Path=/; HttpOnly; SameSite=Strict${process.env.PBX_COOKIE_SECURE === '1' ? '; Secure' : ''}; Max-Age=${remember ? 604800 : 43200}`);
     return { ok: true, csrfToken, username };
   });
 
@@ -273,14 +284,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'INSERT INTO sessions (id, user_id, token_hash, csrf_token, expires_at, remember, created_at) VALUES (?,?,?,?,?,?,?)',
     ).run(randomBytes(16).toString('hex'), user.id, tokenHash, csrfToken, expires, remember ? 1 : 0, new Date().toISOString());
 
-    reply.header('Set-Cookie', `pbx_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${remember ? 604800 : 43200}`);
+    reply.header('Set-Cookie', `pbx_session=${token}; Path=/; HttpOnly; SameSite=Strict${process.env.PBX_COOKIE_SECURE === '1' ? '; Secure' : ''}; Max-Age=${remember ? 604800 : 43200}`);
     return { csrfToken, user: { id: user.id, username: user.username } };
   });
 
   app.post('/api/auth/logout', async (req, reply) => {
     const session = getSession(req);
     if (session) db.prepare('DELETE FROM sessions WHERE id = ?').run(session.id);
-    reply.header('Set-Cookie', 'pbx_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
+    reply.header('Set-Cookie', `pbx_session=; Path=/; HttpOnly; SameSite=Strict${process.env.PBX_COOKIE_SECURE === '1' ? '; Secure' : ''}; Max-Age=0`);
     return { ok: true };
   });
 
