@@ -950,6 +950,28 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     return { ok };
   });
 
+  app.get('/api/voicemail/counts', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const base = join(config.dataDir, 'voicemail');
+    const counts: Record<string, number> = {};
+    for (const ext of model.extensions) {
+      if (!ext.voicemail.enabled) continue;
+      const dir = join(base, 'default', ext.number);
+      let n = 0;
+      if (existsSync(dir)) {
+        try {
+          n = readdirSync(dir).filter((f) => f.endsWith('.wav') || f.endsWith('.txt')).length;
+        } catch {
+          n = 0;
+        }
+      }
+      counts[ext.number] = n;
+    }
+    return counts;
+  });
+
   app.get('/api/security/status', async (req) => {
     requireAuth(req);
     return { fail2ban: 'enabled', bans: listBans(db, true).length };
