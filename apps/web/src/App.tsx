@@ -1,13 +1,65 @@
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './lib/auth';
+import { api } from './lib/api';
+import { SetupPage } from './pages/SetupPage';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { Shell } from './components/Shell';
+
+const queryClient = new QueryClient();
+
+function Guarded({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="grid min-h-screen place-items-center">Loading…</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function SetupGuard({ children }: { children: React.ReactNode }) {
+  const [required, setRequired] = useState<boolean | null>(null);
+  useEffect(() => {
+    void (async () => {
+      try {
+        const s = await api.setupStatus();
+        setRequired(s.setupRequired);
+      } catch {
+        setRequired(false);
+      }
+    })();
+  }, []);
+  if (required === null) return <div className="grid min-h-screen place-items-center">Loading…</div>;
+  if (required) return <Navigate to="/setup" replace />;
+  return <>{children}</>;
+}
+
 export function App() {
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-6 text-slate-100">
-      <section className="max-w-xl space-y-3 text-center">
-        <p className="text-sm font-medium tracking-[0.3em] text-emerald-400 uppercase">BetterPBX</p>
-        <h1 className="text-4xl font-semibold">Scaffold ready</h1>
-        <p className="text-slate-400">
-          The admin UI lands in Phase 4. The Asterisk runtime and config engine are next.
-        </p>
-      </section>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/setup" element={<SetupPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/*"
+              element={
+                <SetupGuard>
+                  <Guarded>
+                    <Shell>
+                      <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </Shell>
+                  </Guarded>
+                </SetupGuard>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
