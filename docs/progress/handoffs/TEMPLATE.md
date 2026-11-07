@@ -1,36 +1,35 @@
 ---
 agent: opencode
-created: 2026-11-07T01:05:00Z
-phase: 5
-tasks: [P5-06]
+created: 2026-11-07T01:10:00Z
+phase: 6
+tasks: [P6-04, P6-05, P6-06, P6-07]
 ---
 
 # Handoff — opencode
 
 ## Current state
 
-Phases 0-4 complete. Phase 5 mostly complete: extensions, trunks, outbound routes API + basic UI implemented and verified by build/typecheck/lint. P5-06 (golden and API integration tests for create/edit/delete and rendered config) remains. Phase 6+ not started.
+Phases 0-5 complete. Phase 6 partially complete: inbound routes, ring groups, IVRs, and prompts CRUD (metadata) implemented in API. Remaining: P6-04 prompt upload/sox conversion, P6-05 voicemail verification/MWI, P6-06 feature codes, P6-07 full renderer integration test.
 
 ## Files changed
 
-- apps/api/src/app.ts: extension/trunk/outbound-route CRUD endpoints.
-- apps/web: ExtensionsPage, TrunksPage, OutboundRoutesPage, routes, nav, API client methods.
+- apps/api/src/app.ts: inbound routes, ring groups, IVRs, prompts endpoints.
 
 ## Tests run
 
-- pnpm test (75 passed)
-- pnpm typecheck (all)
-- pnpm lint (clean)
-- pnpm --filter @better-pbx/web build (success)
+- pnpm test (77 passed)
+- pnpm typecheck, lint (clean)
 
 ## Next steps
 
-- Add P5-06 integration tests (create/edit/delete extensions/trunks/routes, rendered pjsip/extensions config).
-- Then start Phase 6.
+- Implement prompt upload with sox conversion and safe paths.
+- Verify voicemail spool under /data/voicemail and MWI config.
+- Document feature codes (*97, *98, pickup).
+- Add full-PBX renderer integration test.
 
 ## Blockers / decisions
 
-- None.
+- sox binary available in image; upload handling needs multipart parsing (not yet added).
 
 ## Active claims
 
