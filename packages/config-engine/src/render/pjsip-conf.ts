@@ -63,7 +63,7 @@ function extensionSections(extension: Extension): ConfigSection[] {
         'rewrite_contact = yes',
         'ice_support = no',
         'allow_transfer = yes',
-        'allow_subscribe = no',
+        `allow_subscribe = ${extension.voicemail.enabled ? 'yes' : 'no'}`,
         'send_rpid = no',
         'identify_by = auth_username,username,ip',
         ...(extension.voicemail.enabled ? [`mailboxes = ${extension.number}@default`] : []),
