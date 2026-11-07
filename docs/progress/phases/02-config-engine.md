@@ -1,8 +1,8 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: ready
-owner: null
+status: in_progress
+owner: opencode
 branch: main
 depends_on: [1]
 updated: "2026-11-07T00:32:00Z"
@@ -47,7 +47,10 @@ node scripts/progress.mjs check
 - The renderer must never emit anonymous endpoints, catch-all outbound routes, or unauthenticated trunks.
 - `astspooldir=/data` is what places voicemail at `/data/voicemail`.
 - Runtime ban state is not part of the committed model; renderers accept it as a separate optional input.
-- Golden files are reviewed as code; a change to them is a product change.
+- Golden files are reviewed as code; a change to them is a product change. Refresh them with
+  `pnpm golden:update` and review the diff before committing.
+- Named PJSIP ACLs live in `asterisk/acl.conf` (included from `/data/runtime/pjsip-acl.conf`), not in
+  `pjsip.conf`. Endpoints reference the ACL with `acl = global-acl`.
 
 ## Handoff
 

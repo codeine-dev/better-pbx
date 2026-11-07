@@ -32,13 +32,17 @@ export function buildCompleteModel(): PbxModel {
         ...base.settings.network,
         externalAddress: 'sip.example.net',
         localNetworks: ['192.168.10.0/24'],
+        rtpStart: 12000,
+        rtpEnd: 13000,
         tlsEnabled: true,
       },
       security: {
         ...base.settings.security,
+        fail2ban: { maxRetry: 4, findTime: 300, banTime: 7200, increment: true },
         whitelist: ['203.0.113.0/24'],
         blacklist: ['192.0.2.7/32'],
       },
+      voicemail: { maxMessages: 50, maxSeconds: 120, defaultPinLength: 6 },
     },
     prompts: [
       createPrompt({
@@ -48,6 +52,12 @@ export function buildCompleteModel(): PbxModel {
         file: 'custom/welcome',
         originalName: 'welcome.wav',
         durationMs: 4200,
+      }),
+      createPrompt({
+        id: 'prompt-builtin',
+        name: 'Congratulations',
+        kind: 'builtin',
+        file: 'demo-congrats',
       }),
     ],
     extensions: [
@@ -65,6 +75,7 @@ export function buildCompleteModel(): PbxModel {
         number: '101',
         displayName: 'Bob',
         secret: 'bob-super-secret',
+        codecs: ['g722', 'ulaw'],
       }),
       createExtension({
         id: 'ext-102',
@@ -90,8 +101,17 @@ export function buildCompleteModel(): PbxModel {
         id: 'trunk-backup',
         name: 'backup',
         host: '198.51.100.20',
+        codecs: ['gsm', 'ulaw'],
         inboundMode: 'ip',
         providerCidrs: ['198.51.100.0/24'],
+      }),
+      createTrunk({
+        id: 'trunk-spare',
+        name: 'spare',
+        host: '203.0.113.50',
+        username: 'spare',
+        password: 'spare-secret-123',
+        enabled: false,
       }),
     ],
     outboundRoutes: [
@@ -115,6 +135,7 @@ export function buildCompleteModel(): PbxModel {
         priority: 200,
         trunkId: 'trunk-backup',
         callerId: '15551230000',
+        allowPremium: true,
         patterns: [{ match: '_00X.', strip: 2, prepend: '+' }],
       }),
     ],
@@ -127,6 +148,15 @@ export function buildCompleteModel(): PbxModel {
         memberIds: ['ext-100', 'ext-101'],
         ringTime: 25,
         destinationIfNoAnswer: { type: 'voicemail', extensionId: 'ext-100' },
+      }),
+      createRingGroup({
+        id: 'rg-support',
+        name: 'Support',
+        number: '601',
+        strategy: 'linear',
+        memberIds: ['ext-101', 'ext-100'],
+        ringTime: 15,
+        destinationIfNoAnswer: { type: 'hangup' },
       }),
     ],
     ivrs: [
@@ -144,6 +174,15 @@ export function buildCompleteModel(): PbxModel {
         timeoutDestination: { type: 'extension', extensionId: 'ext-101' },
         invalidDestination: { type: 'hangup' },
         directDial: true,
+      }),
+      createIvr({
+        id: 'ivr-after-hours',
+        name: 'After hours',
+        greetingPromptId: 'prompt-builtin',
+        timeoutSeconds: 3,
+        maxRetries: 1,
+        timeoutDestination: { type: 'hangup' },
+        directDial: false,
       }),
     ],
     inboundRoutes: [

@@ -12,6 +12,7 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "test:e2e": "node -e \"console.log('E2E tests are introduced in Phase 4; no tests to run yet.')\"",
+    "golden:update": "PBX_UPDATE_GOLDEN=1 vitest run packages/config-engine/src/golden.test.ts",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",

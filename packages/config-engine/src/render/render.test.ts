@@ -56,7 +56,7 @@ describe('renderers', () => {
 
     expect(voicemail).toContain('100 => 4821,Alice,alice@example.com');
     expect(voicemail).not.toContain('101 =>');
-    expect(voicemail).toContain('maxmsg = 100');
+    expect(voicemail).toContain('maxmsg = 50');
   });
 
   it('fails closed in every inbound context', () => {
