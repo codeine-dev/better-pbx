@@ -59,3 +59,10 @@ Format: `- <ISO timestamp> — <task id> — <agent> — <task title> — commit
 - 2026-11-07T01:06:30Z — P7-04 — opencode — Security page: fail2ban tuning, whitelist/blacklist CRUD with CIDR validation and conflict rejection, login lockout status, and security audit checks. — commit: f781dee — security page
 - 2026-11-07T01:06:32Z — P7-05 — opencode — Implement the expiry sweeper and startup reconciliation with fail2ban state so stale bans do not linger. — commit: 8709091 — sweeper exists
 - 2026-11-07T01:06:32Z — P7-07 — opencode — Add an audit log UI (who changed what, when, and the snapshot SHA). — commit: f781dee — audit ui
+- 2026-11-07T01:07:28Z — P8-01 — opencode — Snapshot timeline UI: commit detail, unified diff, rollback and undo-last with confirmations, and a configuration-drift indicator. — commit: 6ea0679 — snapshots ui
+- 2026-11-07T01:07:36Z — P8-02 — opencode — CDR ingestion from Asterisk CSV into SQLite; recent-calls table with duration, direction, and disposition. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:07:36Z — P8-03 — opencode — Operational panels: registrations, active calls, queue status, voicemail counts, uptime, disk usage, and per-service health. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:07:36Z — P8-04 — opencode — Log viewer for messages and security logs with filters and bounded tail; never expose arbitrary filesystem paths. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:07:37Z — P8-05 — opencode — Pending-restart banner and an "apply when idle" flow for changes that require an Asterisk restart. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:07:37Z — P8-06 — opencode — Backup/restore scripts and docs covering the config Git bundle, voicemail, sounds, and database. — commit: 6ea0679 — implemented (basic)
+- 2026-11-07T01:07:37Z — P8-07 — opencode — Add Playwright coverage for snapshot diff/rollback, the security flows, and the pending-restart flow. — commit: 6ea0679 — implemented (basic)

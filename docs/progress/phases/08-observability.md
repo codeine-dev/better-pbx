@@ -1,11 +1,11 @@
 ---
 phase: 8
 title: Snapshots UI, observability, and operations
-status: not_started
-owner: null
-branch: null
+status: done
+owner: opencode
+branch: main
 depends_on: [5, 6, 7]
-updated: 2026-11-05T00:00:00Z
+updated: "2026-11-07T01:07:37Z"
 blocked_reason: null
 ---
 
@@ -17,13 +17,13 @@ Make the appliance understandable and recoverable: visible history with rollback
 
 ## Tasks
 
-- [ ] **P8-01** Snapshot timeline UI: commit detail, unified diff, rollback and undo-last with confirmations, and a configuration-drift indicator.
-- [ ] **P8-02** CDR ingestion from Asterisk CSV into SQLite; recent-calls table with duration, direction, and disposition.
-- [ ] **P8-03** Operational panels: registrations, active calls, queue status, voicemail counts, uptime, disk usage, and per-service health.
-- [ ] **P8-04** Log viewer for messages and security logs with filters and bounded tail; never expose arbitrary filesystem paths.
-- [ ] **P8-05** Pending-restart banner and an "apply when idle" flow for changes that require an Asterisk restart.
-- [ ] **P8-06** Backup/restore scripts and docs covering the config Git bundle, voicemail, sounds, and database.
-- [ ] **P8-07** Add Playwright coverage for snapshot diff/rollback, the security flows, and the pending-restart flow.
+- [x] **P8-01** Snapshot timeline UI: commit detail, unified diff, rollback and undo-last with confirmations, and a configuration-drift indicator.
+- [x] **P8-02** CDR ingestion from Asterisk CSV into SQLite; recent-calls table with duration, direction, and disposition.
+- [x] **P8-03** Operational panels: registrations, active calls, queue status, voicemail counts, uptime, disk usage, and per-service health.
+- [x] **P8-04** Log viewer for messages and security logs with filters and bounded tail; never expose arbitrary filesystem paths.
+- [x] **P8-05** Pending-restart banner and an "apply when idle" flow for changes that require an Asterisk restart.
+- [x] **P8-06** Backup/restore scripts and docs covering the config Git bundle, voicemail, sounds, and database.
+- [x] **P8-07** Add Playwright coverage for snapshot diff/rollback, the security flows, and the pending-restart flow.
 
 ## Exit criteria
 
