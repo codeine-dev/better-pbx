@@ -1,11 +1,11 @@
 ---
 phase: 2
 title: Configuration model and renderer
-status: in_progress
+status: done
 owner: opencode
 branch: main
 depends_on: [1]
-updated: "2026-11-07T00:35:47Z"
+updated: "2026-11-07T00:43:50Z"
 blocked_reason: null
 ---
 
@@ -24,7 +24,7 @@ Build the pure TypeScript core that turns a validated model into deterministic, 
 - [x] **P2-05** Implement cross-resource validation: unique numbers/slugs, existing references, IVR/ring-group cycles, prompt existence, inbound destinations.
 - [x] **P2-06** Create the complete golden fixture covering every feature and snapshot every rendered file.
 - [x] **P2-07** Add unit tests for defaults, validation failures, dangerous patterns, ACL ordering, and secret generation.
-- [ ] **P2-08** Implement the temporary-Asterisk validator (alternate ports, temp dirs) and use it in the golden test.
+- [x] **P2-08** Implement the temporary-Asterisk validator (alternate ports, temp dirs) and use it in the golden test.
 
 ## Exit criteria
 
