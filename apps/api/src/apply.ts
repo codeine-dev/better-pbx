@@ -140,6 +140,7 @@ export async function applyModel(
         () => opts.asterisk.reloadPjsip(),
         () => opts.asterisk.reloadVoicemail(),
         () => opts.asterisk.reloadQueues(),
+        () => opts.asterisk.loggerReload(),
       ];
       for (const r of reloads) {
         const res = r();

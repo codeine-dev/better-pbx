@@ -1095,7 +1095,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     // Ensure the dedicated sip log channel exists even on volumes rendered before this
     // feature shipped: patch logger.conf in place and make sure the file is present.
     try {
-      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend } = await import('node:fs');
+      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend, mkdirSync: fsMkdir } = await import('node:fs');
       const loggerPath = join(config.configDir, 'asterisk', 'logger.conf');
       if (fsExists(loggerPath)) {
         const text = fsRead(loggerPath, 'utf8');
@@ -1106,8 +1106,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           else fsAppend(loggerPath, '\nsip => verbose,debug\n');
         }
       }
-      const sipLog = join(config.dataDir, 'log', 'sip');
+      const sipLogDir = join(config.dataDir, 'log');
+      if (!fsExists(sipLogDir)) fsMkdir(sipLogDir, { recursive: true });
+      const sipLog = join(sipLogDir, 'sip');
       if (!fsExists(sipLog)) fsWrite(sipLog, '', { mode: 0o664 });
+      try { (await import('node:fs')).chmodSync(sipLog, 0o664); } catch { void 0; }
     } catch {
       void 0;
     }
@@ -1141,7 +1144,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     // Ensure the dedicated sip log channel exists even on volumes rendered before this
     // feature shipped: patch logger.conf in place and make sure the file is present.
     try {
-      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend } = await import('node:fs');
+      const { existsSync: fsExists, readFileSync: fsRead, writeFileSync: fsWrite, appendFileSync: fsAppend, mkdirSync: fsMkdir } = await import('node:fs');
       const loggerPath = join(config.configDir, 'asterisk', 'logger.conf');
       if (fsExists(loggerPath)) {
         const text = fsRead(loggerPath, 'utf8');
@@ -1152,8 +1155,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           else fsAppend(loggerPath, '\nsip => verbose,debug\n');
         }
       }
-      const sipLog = join(config.dataDir, 'log', 'sip');
+      const sipLogDir = join(config.dataDir, 'log');
+      if (!fsExists(sipLogDir)) fsMkdir(sipLogDir, { recursive: true });
+      const sipLog = join(sipLogDir, 'sip');
       if (!fsExists(sipLog)) fsWrite(sipLog, '', { mode: 0o664 });
+      try { (await import('node:fs')).chmodSync(sipLog, 0o664); } catch { void 0; }
     } catch {
       void 0;
     }
