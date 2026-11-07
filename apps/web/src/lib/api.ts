@@ -67,4 +67,13 @@ export const api = {
   bans: () => apiFetch<Array<{ ip: string; reason: string | null; source: string; createdAt: string; expiresAt: string | null; active: boolean }>>('/api/security/bans'),
   unban: (ip: string) => apiFetch<{ ok: boolean }>(`/api/security/bans/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
   audit: () => apiFetch<Array<{ id: number; createdAt: string; actor: string; action: string; target: string | null; commitSha: string | null }>>('/api/audit'),
+  extensions: () => apiFetch<Array<{ id: string; number: string; displayName: string; enabled: boolean }>>('/api/extensions'),
+  createExtension: (body: unknown) => apiFetch<Record<string, unknown>>('/api/extensions', { method: 'POST', body: JSON.stringify(body) }),
+  deleteExtension: (id: string) => apiFetch<{ ok: boolean }>(`/api/extensions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  trunks: () => apiFetch<Array<{ id: string; name: string; host: string; enabled: boolean }>>('/api/trunks'),
+  createTrunk: (body: unknown) => apiFetch<Record<string, unknown>>('/api/trunks', { method: 'POST', body: JSON.stringify(body) }),
+  deleteTrunk: (id: string) => apiFetch<{ ok: boolean }>(`/api/trunks/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  outboundRoutes: () => apiFetch<Array<{ id: string; name: string; priority: number; trunkId: string; enabled: boolean }>>('/api/outbound-routes'),
+  createOutboundRoute: (body: unknown) => apiFetch<Record<string, unknown>>('/api/outbound-routes', { method: 'POST', body: JSON.stringify(body) }),
+  deleteOutboundRoute: (id: string) => apiFetch<{ ok: boolean }>(`/api/outbound-routes/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };

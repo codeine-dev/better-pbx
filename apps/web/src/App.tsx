@@ -6,6 +6,9 @@ import { api } from './lib/api';
 import { SetupPage } from './pages/SetupPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ExtensionsPage } from './pages/ExtensionsPage';
+import { TrunksPage } from './pages/TrunksPage';
+import { OutboundRoutesPage } from './pages/OutboundRoutesPage';
 import { Shell } from './components/Shell';
 
 const queryClient = new QueryClient();
@@ -50,6 +53,9 @@ export function App() {
                     <Shell>
                       <Routes>
                         <Route path="/" element={<DashboardPage />} />
+                        <Route path="/extensions" element={<ExtensionsPage />} />
+                        <Route path="/trunks" element={<TrunksPage />} />
+                        <Route path="/outbound-routes" element={<OutboundRoutesPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>
                     </Shell>

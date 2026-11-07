@@ -12,10 +12,11 @@ import { recordAudit, listAudit } from './audit.js';
 import { addBan, listBans, removeBan, sweepExpired } from './bans.js';
 import { applyModel } from './apply.js';
 import { readModel, writeModel, bootstrapModel } from './model-store.js';
-import { badRequest, unauthorized, forbidden, conflict, setupRequired, AppError, tooMany } from './errors.js';
+import { badRequest, unauthorized, forbidden, notFound, conflict, setupRequired, AppError, tooMany } from './errors.js';
 import { assertValidModel } from '@better-pbx/config-engine';
 import { API_VERSION } from './version.js';
 import type { PbxModel } from '@better-pbx/shared';
+import { createExtension, createTrunk, createOutboundRoute } from '@better-pbx/shared';
 
 export { API_VERSION };
 
@@ -357,6 +358,261 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
     }, model);
     return { ok: true, commitSha: result.commitSha, restartRequired: result.restartRequired };
+  });
+
+  // extensions
+  app.get('/api/extensions', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.extensions.map((e) => ({ ...e, secret: undefined }));
+  });
+
+  app.post('/api/extensions', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const ext = createExtension({
+      number: String(body.number ?? ''),
+      displayName: typeof body.displayName === 'string' ? body.displayName : undefined,
+      secret: typeof body.secret === 'string' ? body.secret : undefined,
+      codecs: Array.isArray(body.codecs) ? (body.codecs as string[]) : undefined,
+      enabled: typeof body.enabled === 'boolean' ? body.enabled : undefined,
+      transport: typeof body.transport === 'string' ? (body.transport as 'udp' | 'tls') : undefined,
+      maxContacts: typeof body.maxContacts === 'number' ? body.maxContacts : undefined,
+      voicemail: (body.voicemail as Record<string, unknown>) ?? undefined,
+      callerId: typeof body.callerId === 'string' ? body.callerId : undefined,
+    } as unknown as Parameters<typeof createExtension>[0]);
+    const newModel = { ...model, extensions: [...model.extensions, ext], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create extension',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'create-extension', target: ext.id, commitSha: result.commitSha });
+    return { ...ext }; // includes secret once
+  });
+
+  app.patch('/api/extensions/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.extensions.findIndex((e) => e.id === id);
+    if (idx < 0) throw notFound('extension not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.extensions[idx];
+    const updated = { ...current };
+    if (typeof body.displayName === 'string') updated.displayName = body.displayName;
+    if (Array.isArray(body.codecs)) updated.codecs = body.codecs as never;
+    if (typeof body.enabled === 'boolean') updated.enabled = body.enabled;
+    if (typeof body.transport === 'string') updated.transport = body.transport as 'udp' | 'tls';
+    if (typeof body.maxContacts === 'number') updated.maxContacts = body.maxContacts;
+    if (typeof body.callerId === 'string') updated.callerId = body.callerId;
+    if (body.voicemail && typeof body.voicemail === 'object') updated.voicemail = { ...updated.voicemail, ...(body.voicemail as Record<string, unknown>) } as never;
+    let revealedSecret: string | undefined;
+    if (body.resetSecret === true) {
+      const { generateSipSecret } = await import('@better-pbx/shared');
+      revealedSecret = generateSipSecret();
+      updated.secret = revealedSecret;
+    }
+    const newExtensions = model.extensions.map((e, i) => (i === idx ? updated : e));
+    const newModel = { ...model, extensions: newExtensions, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update extension',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'update-extension', target: id, commitSha: result.commitSha });
+    const out: Record<string, unknown> = { ...updated, secret: undefined };
+    if (revealedSecret) out.secret = revealedSecret;
+    return out;
+  });
+
+  app.delete('/api/extensions/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    // delete guards: referenced by ring groups / ivrs / inbound routes
+    for (const rg of model.ringGroups) {
+      if (rg.memberIds.includes(id)) throw conflict('extension is a member of a ring group');
+    }
+    const newModel = { ...model, extensions: model.extensions.filter((e) => e.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete extension',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-extension', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // trunks
+  app.get('/api/trunks', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.trunks.map((t) => ({ ...t, password: undefined }));
+  });
+
+  app.post('/api/trunks', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const trunk = createTrunk({
+      name: String(body.name ?? ''),
+      host: String(body.host ?? ''),
+      port: typeof body.port === 'number' ? body.port : undefined,
+      transport: typeof body.transport === 'string' ? (body.transport as 'udp' | 'tls') : undefined,
+      username: typeof body.username === 'string' ? body.username : undefined,
+      password: typeof body.password === 'string' ? body.password : undefined,
+      fromUser: typeof body.fromUser === 'string' ? body.fromUser : undefined,
+      fromDomain: typeof body.fromDomain === 'string' ? body.fromDomain : undefined,
+      callerId: typeof body.callerId === 'string' ? body.callerId : undefined,
+      codecs: Array.isArray(body.codecs) ? (body.codecs as string[]) : undefined,
+      inboundMode: typeof body.inboundMode === 'string' ? (body.inboundMode as 'registration' | 'ip') : undefined,
+      providerCidrs: Array.isArray(body.providerCidrs) ? (body.providerCidrs as string[]) : undefined,
+      enabled: typeof body.enabled === 'boolean' ? body.enabled : undefined,
+    } as unknown as Parameters<typeof createTrunk>[0]);
+    const newModel = { ...model, trunks: [...model.trunks, trunk], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create trunk',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'create-trunk', target: trunk.id, commitSha: result.commitSha });
+    return trunk;
+  });
+
+  app.patch('/api/trunks/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.trunks.findIndex((t) => t.id === id);
+    if (idx < 0) throw notFound('trunk not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.trunks[idx];
+    const updated = { ...current };
+    const fields = ['name','host','port','transport','username','password','fromUser','fromDomain','callerId','codecs','inboundMode','providerCidrs','enabled'] as const;
+    for (const f of fields) {
+      if (body[f] !== undefined) (updated as Record<string, unknown>)[f] = body[f];
+    }
+    const newTrunks = model.trunks.map((t, i) => (i === idx ? updated : t));
+    const newModel = { ...model, trunks: newTrunks, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update trunk',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'update-trunk', target: id, commitSha: result.commitSha });
+    return { ...updated, password: undefined };
+  });
+
+  app.delete('/api/trunks/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const used = model.outboundRoutes.some((r) => r.trunkId === id);
+    if (used) throw conflict('trunk is used by an outbound route');
+    const newModel = { ...model, trunks: model.trunks.filter((t) => t.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete trunk',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-trunk', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
+  });
+
+  // outbound routes
+  app.get('/api/outbound-routes', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    return model.outboundRoutes;
+  });
+
+  app.post('/api/outbound-routes', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const body = req.body as Record<string, unknown>;
+    const route = createOutboundRoute({
+      name: String(body.name ?? ''),
+      trunkId: String(body.trunkId ?? ''),
+      patterns: Array.isArray(body.patterns) ? (body.patterns as never) : [],
+      priority: typeof body.priority === 'number' ? body.priority : undefined,
+      callerId: typeof body.callerId === 'string' ? body.callerId : undefined,
+      allowPremium: typeof body.allowPremium === 'boolean' ? body.allowPremium : undefined,
+      enabled: typeof body.enabled === 'boolean' ? body.enabled : undefined,
+    } as unknown as Parameters<typeof createOutboundRoute>[0]);
+    const newModel = { ...model, outboundRoutes: [...model.outboundRoutes, route], meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Create outbound route',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'create-outbound-route', target: route.id, commitSha: result.commitSha });
+    return route;
+  });
+
+  app.patch('/api/outbound-routes/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const idx = model.outboundRoutes.findIndex((r) => r.id === id);
+    if (idx < 0) throw notFound('outbound route not found');
+    const body = req.body as Record<string, unknown>;
+    const current = model.outboundRoutes[idx];
+    const updated = { ...current, ...body } as typeof current;
+    const newRoutes = model.outboundRoutes.map((r, i) => (i === idx ? updated : r));
+    const newModel = { ...model, outboundRoutes: newRoutes, meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Update outbound route',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'update-outbound-route', target: id, commitSha: result.commitSha });
+    return updated;
+  });
+
+  app.delete('/api/outbound-routes/:id', async (req) => {
+    const session = requireAuth(req);
+    requireCsrf(req, session);
+    const user = findUserById(session.userId);
+    if (!user) throw unauthorized();
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const id = (req.params as { id: string }).id;
+    const newModel = { ...model, outboundRoutes: model.outboundRoutes.filter((r) => r.id !== id), meta: { ...model.meta, updatedAt: new Date().toISOString() } };
+    const result = await applyModel(newModel, {
+      config, db, git, asterisk, fail2ban, actor: user.username, changeDescription: 'Delete outbound route',
+      runtimeBans: listBans(db, true).map((b) => ({ ip: b.ip })),
+    }, model);
+    recordAudit(db, { actor: user.username, action: 'delete-outbound-route', target: id, commitSha: result.commitSha });
+    return { ok: true, commitSha: result.commitSha };
   });
 
   // snapshots

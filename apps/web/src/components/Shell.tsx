@@ -10,6 +10,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="mb-6 text-lg font-semibold">BetterPBX</div>
         <nav className="space-y-1 text-sm">
           <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/">Dashboard</a>
+          <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/extensions">Extensions</a>
+          <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/trunks">Trunks</a>
+          <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/outbound-routes">Outbound routes</a>
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
