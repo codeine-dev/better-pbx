@@ -1000,6 +1000,46 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
 
   // system
+  app.get('/api/system/registrations', async (req) => {
+    requireAuth(req);
+    const res = asterisk.ping(); // placeholder
+    return { output: res.stdout || res.stderr };
+  });
+
+  app.get('/api/system/calls', async (req) => {
+    requireAuth(req);
+    const res = asterisk.coreShowChannels();
+    return { output: res.stdout || res.stderr };
+  });
+
+  app.get('/api/system/cdr', async (req) => {
+    requireAuth(req);
+    const { existsSync, readFileSync } = await import('node:fs');
+    const cdrPath = join(config.dataDir, 'log', 'cdr.csv');
+    if (!existsSync(cdrPath)) return [];
+    const text = readFileSync(cdrPath, 'utf8');
+    const lines = text.trim().split('\\n').slice(-100);
+    return lines.map((l) => ({ raw: l }));
+  });
+
+  app.get('/api/system/logs', async (req) => {
+    requireAuth(req);
+    const q = req.query as Record<string, string>;
+    const file = q.file === 'security' ? 'security' : 'messages';
+    const tail = Math.min(Number(q.tail ?? 200), 1000);
+    const logPath = join(config.dataDir, 'log', `${file}.log`);
+    const { existsSync, readFileSync } = await import('node:fs');
+    if (!existsSync(logPath)) return { lines: [] };
+    const text = readFileSync(logPath, 'utf8');
+    const lines = text.split('\\n');
+    return { lines: lines.slice(-tail) };
+  });
+
+  app.get('/api/system/queues', async (req) => {
+    requireAuth(req);
+    return { output: 'no queues' };
+  });
+
   app.get('/api/system/status', async (req) => {
     requireAuth(req);
     return {

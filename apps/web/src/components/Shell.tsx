@@ -14,6 +14,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/trunks">Trunks</a>
           <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/outbound-routes">Outbound routes</a>
           <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/security">Security</a>
+          <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/snapshots">Snapshots</a>
+          <a className="block rounded px-2 py-1 hover:bg-slate-800" href="/logs">Logs</a>
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
