@@ -1,5 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { connect as tlsConnect } from 'node:tls';
+import { createSocket } from 'node:dgram';
 import { execFileSync } from 'node:child_process';
 import { join, relative, extname } from 'node:path';
 import { randomBytes, createHash, X509Certificate, createPrivateKey } from 'node:crypto';
@@ -468,6 +470,92 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     requireAuth(req);
     if (!existsSync(tlsCertPath)) throw notFound('certificate not found');
     return { cert: readFileSync(tlsCertPath, 'utf8') };
+  });
+
+  app.post('/api/tls/validate', async (req) => {
+    requireAuth(req);
+    const model = readModel(config);
+    if (!model) throw setupRequired();
+    const tlsPort = model.settings.network.tlsPort;
+    const srtpEnabled = model.settings.network.srtpEnabled;
+
+    // TLS handshake check
+    const tlsResult: Record<string, unknown> = { port: tlsPort };
+    let sipStatus: number | null = null;
+    let sipResponse = '';
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const socket = tlsConnect({ host: '127.0.0.1', port: tlsPort, rejectUnauthorized: false, timeout: 5000 }, () => {
+          tlsResult.ok = true;
+          tlsResult.protocol = socket.getProtocol();
+          tlsResult.cipher = socket.getCipher();
+          tlsResult.authorized = socket.authorized;
+          // Send a SIP OPTIONS request over TLS
+          const reqText = [
+            'OPTIONS sip:127.0.0.1 SIP/2.0',
+            'Via: SIP/2.0/TLS 127.0.0.1;branch=z9hG4bKvalidate',
+            'From: <sip:validate@127.0.0.1>;tag=validate',
+            'To: <sip:127.0.0.1>',
+            'Call-ID: validate@127.0.0.1',
+            'CSeq: 1 OPTIONS',
+            'Max-Forwards: 70',
+            'Content-Length: 0',
+            '',
+            '',
+          ].join('\r\n');
+          socket.write(reqText);
+        });
+        let buf = '';
+        socket.on('data', (chunk) => {
+          buf += chunk.toString('utf8');
+          if (buf.includes('\r\n\r\n')) {
+            const m = buf.match(/^SIP\/2\.0\s+(\d+)/);
+            if (m) sipStatus = Number(m[1]);
+            sipResponse = buf.split('\r\n\r\n')[0] ?? '';
+            socket.end();
+          }
+        });
+        socket.on('timeout', () => { socket.destroy(); reject(new Error('TLS/SIP timeout')); });
+        socket.on('error', (err) => reject(err));
+        socket.on('close', () => resolve());
+        setTimeout(() => { try { socket.destroy(); } catch {} resolve(); }, 6000);
+      });
+    } catch (e) {
+      tlsResult.ok = false;
+      tlsResult.error = e instanceof Error ? e.message : String(e);
+    }
+
+    // RTP port range bindability check
+    const rtpResult: Record<string, unknown> = {
+      start: model.settings.network.rtpStart,
+      end: model.settings.network.rtpEnd,
+    };
+    try {
+      const sock = createSocket('udp4');
+      await new Promise<void>((resolve, reject) => {
+        sock.on('error', reject);
+        sock.bind(model.settings.network.rtpStart, '127.0.0.1', () => {
+          rtpResult.bindable = true;
+          sock.close(() => resolve());
+        });
+      });
+    } catch (e) {
+      rtpResult.bindable = false;
+      rtpResult.error = e instanceof Error ? e.message : String(e);
+    }
+
+    // SRTP config check
+    const pjsipPath = join(config.configDir, 'asterisk', 'pjsip.conf');
+    const pjsipText = existsSync(pjsipPath) ? readFileSync(pjsipPath, 'utf8') : '';
+    const srtpConfigured = srtpEnabled && pjsipText.includes('media_encryption = sdes');
+
+    return {
+      tls: tlsResult,
+      sip: { status: sipStatus, response: sipResponse.slice(0, 500) },
+      rtp: rtpResult,
+      srtp: { enabled: srtpEnabled, configured: srtpConfigured },
+      dtlsSrtp: { supported: false, note: 'DTLS-SRTP is not configured in this build' },
+    };
   });
 
   // TLS certificate management

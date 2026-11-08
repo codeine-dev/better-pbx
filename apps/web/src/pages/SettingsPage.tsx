@@ -21,6 +21,7 @@ export function SettingsPage() {
   const [acmeDnsProvider, setAcmeDnsProvider] = useState('');
   const [acmeCredentials, setAcmeCredentials] = useState('');
   const [tlsMsg, setTlsMsg] = useState<string | null>(null);
+  const [tlsValidation, setTlsValidation] = useState<Record<string, unknown> | null>(null);
 
 
   useEffect(() => {
@@ -494,6 +495,15 @@ headers:
             <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsSelfSigned(); await refetchTls(); await refetchTlsCert(); setTlsMsg('Self-signed certificate generated.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Generate self-signed</button>
             <button className="btn" onClick={async () => { setTlsMsg(null); try { await api.tlsRenew(); await refetchTls(); setTlsMsg('Renewal attempted.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Renew (ACME)</button>
           </div>
+          <div className="flex gap-2">
+            <button className="btn" onClick={async () => { setTlsMsg(null); try { const r = await api.tlsValidate(); setTlsValidation(r); setTlsMsg('Validation complete.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Validate SIPS/SRTP</button>
+          </div>
+          {tlsValidation && (
+            <pre className="mt-2 overflow-auto rounded bg-black/30 p-2 text-xs">
+              {JSON.stringify(tlsValidation, null, 2)}
+            </pre>
+          )}
+
           <div className="space-y-2">
             <label className="label">Certificate PEM</label>
             <textarea className="input" rows={4} value={certPem} onChange={(e) => setCertPem(e.target.value)} />

@@ -96,6 +96,7 @@ export const api = {
   tlsUploadCert: (body: { cert: string; key: string }) => apiFetch<Record<string, unknown>>('/api/tls/certificate', { method: 'POST', body: JSON.stringify(body) }),
   tlsAcme: (body: Record<string, unknown>) => apiFetch<Record<string, unknown>>('/api/tls/acme', { method: 'POST', body: JSON.stringify(body) }),
   tlsRenew: () => apiFetch<Record<string, unknown>>('/api/tls/renew', { method: 'POST' }),
+  tlsValidate: () => apiFetch<Record<string, unknown>>('/api/tls/validate', { method: 'POST' }),
 
   extensions: () => apiFetch<Array<Omit<Extension, 'secret'>>>('/api/extensions'),
   createExtension: (body: unknown) => apiFetch<Extension & { secret?: string }>('/api/extensions', { method: 'POST', body: JSON.stringify(body) }),
