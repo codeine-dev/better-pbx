@@ -523,7 +523,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
         socket.on('timeout', () => { socket.destroy(); reject(new Error('TLS/SIP timeout')); });
         socket.on('error', (err) => reject(err));
         socket.on('close', () => resolve());
-        setTimeout(() => { try { socket.destroy(); } catch {} resolve(); }, 6000);
+        setTimeout(() => { try { socket.destroy(); } catch { void 0; } resolve(); }, 6000);
       });
     } catch (e) {
       tlsResult.ok = false;

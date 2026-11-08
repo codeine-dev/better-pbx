@@ -224,7 +224,7 @@ export function SettingsPage() {
               className="select"
               value={form.network.tlsMethod}
               onChange={(e) =>
-                setForm({ ...form, network: { ...form.network, tlsMethod: e.target.value } })
+                setForm({ ...form, network: { ...form.network, tlsMethod: e.target.value as '' | 'tlsv1' | 'tlsv1_1' | 'tlsv1_2' | 'tlsv1_3' } })
               }
             >
               <option value="">Default</option>
