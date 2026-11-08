@@ -230,11 +230,10 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
       lines: [
         'type = transport',
         'protocol = tls',
+        'method = tlsv1_3',
         `bind = 0.0.0.0:${model.settings.network.tlsPort}`,
         `cert_file = ${paths.dataDir}/runtime/tls/sip.crt`,
         `priv_key_file = ${paths.dataDir}/runtime/tls/sip.key`,
-        'method = tlsv1_2',
-        'cipher = AES256-SHA',
         'verify_client = no',
         'require_client_cert = no',
         'allow_reload = yes',

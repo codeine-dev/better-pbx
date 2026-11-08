@@ -83,6 +83,12 @@ RUN set -eux; \
     make -j"$(nproc)"; \
     make install DESTDIR=/out
 
+# Compile a small LD_PRELOAD shim that forces Asterisk's TLS handshakes onto the P-256 curve,
+# which the phones in the field actually support. Without this, pjproject pins the handshake to
+# X25519 and older SIP phones fail with 'wrong curve'.
+COPY docker/asterisk/force-p256.c /tmp/force-p256.c
+RUN gcc -shared -fPIC -o /out/usr/lib/force-p256.so /tmp/force-p256.c -lssl -lcrypto -ldl
+
 # ---------------------------------------------------------------------------
 # Stage 2: English sound packs and music on hold
 # ---------------------------------------------------------------------------
@@ -245,6 +251,7 @@ RUN groupadd --gid 1001 pbx \
 # builder's /var/lib/asterisk contains the XML documentation, static-http assets, and other
 # data files that core modules need; the sounds stage only overlays sounds and MOH.
 COPY --from=asterisk-builder /out/usr /usr
+RUN echo /usr/lib/force-p256.so > /etc/ld.so.preload
 COPY --from=asterisk-builder /out/var/lib/asterisk /var/lib/asterisk
 COPY --from=sounds /out/var/lib/asterisk /var/lib/asterisk
 
