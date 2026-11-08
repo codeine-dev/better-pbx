@@ -235,14 +235,22 @@ export function SettingsPage() {
             </select>
           </div>
           <div>
-            <label className="label">TLS cipher (optional)</label>
-            <input
-              className="input"
+            <label className="label">TLS cipher</label>
+            <select
+              className="select"
               value={form.network.tlsCipher}
               onChange={(e) =>
                 setForm({ ...form, network: { ...form.network, tlsCipher: e.target.value } })
               }
-            />
+            >
+              <option value="">Default (OpenSSL)</option>
+              <option value="TLS_AES_256_GCM_SHA384">TLS 1.3 AES-256-GCM</option>
+              <option value="TLS_AES_128_GCM_SHA256">TLS 1.3 AES-128-GCM</option>
+              <option value="ECDHE-RSA-AES256-GCM-SHA384">ECDHE-RSA AES-256-GCM</option>
+              <option value="ECDHE-RSA-AES128-GCM-SHA256">ECDHE-RSA AES-128-GCM</option>
+              <option value="AES256-SHA">AES-256-SHA</option>
+              <option value="AES128-SHA">AES-128-SHA</option>
+            </select>
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input
