@@ -48,5 +48,13 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker build -t "ghcr.io/${{ github.repository }}:${{ github.sha }}" .
-          docker push "ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          IMAGE="ghcr.io/${{ github.repository }}"
+          docker build \
+            -t "$IMAGE:latest" \
+            -t "$IMAGE:main" \
+            -t "$IMAGE:$SHORT_SHA" \
+            .
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:main"
+          docker push "$IMAGE:$SHORT_SHA"
