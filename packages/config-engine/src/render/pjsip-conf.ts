@@ -17,7 +17,7 @@ function codecLines(codecs: readonly string[]): string[] {
   return ['disallow = all', ...codecs.map((codec) => `allow = ${codec}`)];
 }
 
-function extensionSections(extension: Extension, srtpEnabled: boolean): ConfigSection[] {
+function extensionSections(extension: Extension, mediaMode: 'none' | 'sdes' | 'dtls', certPath: string): ConfigSection[] {
   if (!extension.enabled) return [];
 
   const transport = extension.transport === 'tls' ? 'transport-tls' : 'transport-udp';
@@ -62,7 +62,17 @@ function extensionSections(extension: Extension, srtpEnabled: boolean): ConfigSe
         'force_rport = yes',
         'rewrite_contact = yes',
         'ice_support = no',
-        ...(srtpEnabled ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
+        ...(mediaMode === 'sdes' ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
+        ...(mediaMode === 'dtls'
+          ? [
+              'media_encryption = dtls',
+              'media_encryption_optimistic = no',
+              'dtls_verify = fingerprint',
+              'dtls_setup = actpass',
+              `dtls_cert_file = ${certPath}/sip.crt`,
+              `dtls_private_key = ${certPath}/sip.key`,
+            ]
+          : []),
         'allow_transfer = yes',
         `allow_subscribe = ${extension.voicemail.enabled ? 'yes' : 'no'}`,
         'send_rpid = no',
@@ -73,7 +83,7 @@ function extensionSections(extension: Extension, srtpEnabled: boolean): ConfigSe
   ];
 }
 
-function trunkSections(trunk: Trunk, srtpEnabled: boolean): ConfigSection[] {
+function trunkSections(trunk: Trunk, mediaMode: 'none' | 'sdes' | 'dtls', certPath: string): ConfigSection[] {
   if (!trunk.enabled) return [];
 
   const transport = trunk.transport === 'tls' ? 'transport-tls' : 'transport-udp';
@@ -125,7 +135,17 @@ function trunkSections(trunk: Trunk, srtpEnabled: boolean): ConfigSection[] {
       'force_rport = yes',
       'rewrite_contact = yes',
       'ice_support = no',
-      ...(srtpEnabled ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
+      ...(mediaMode === 'sdes' ? ['media_encryption = sdes', 'media_encryption_optimistic = no'] : []),
+      ...(mediaMode === 'dtls'
+        ? [
+            'media_encryption = dtls',
+            'media_encryption_optimistic = no',
+            'dtls_verify = fingerprint',
+            'dtls_setup = actpass',
+            `dtls_cert_file = ${certPath}/sip.crt`,
+            `dtls_private_key = ${certPath}/sip.key`,
+          ]
+        : []),
       'send_pai = yes',
       'send_rpid = no',
       'identify_by = ip,auth_username,username',
@@ -214,7 +234,7 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
         `cert_file = ${paths.dataDir}/runtime/tls/sip.crt`,
         `priv_key_file = ${paths.dataDir}/runtime/tls/sip.key`,
         'method = tlsv1_2',
-        'cipher = AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA',
+        'cipher = AES256-SHA',
         'verify_client = no',
         'require_client_cert = no',
         'allow_reload = yes',
@@ -222,16 +242,22 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
     });
   }
 
+  const mediaMode: 'none' | 'sdes' | 'dtls' = model.settings.network.dtlsSrtpEnabled
+    ? 'dtls'
+    : model.settings.network.srtpEnabled
+      ? 'sdes'
+      : 'none';
+
   const extensions = model.extensions
     .slice()
     .sort((a, b) => a.number.localeCompare(b.number, 'en'));
   for (const extension of extensions) {
-    sections.push(...extensionSections(extension, model.settings.network.srtpEnabled));
+    sections.push(...extensionSections(extension, mediaMode, `${paths.dataDir}/runtime/tls`));
   }
 
   const trunks = model.trunks.slice().sort((a, b) => a.name.localeCompare(b.name, 'en'));
   for (const trunk of trunks) {
-    sections.push(...trunkSections(trunk, model.settings.network.srtpEnabled));
+    sections.push(...trunkSections(trunk, mediaMode, `${paths.dataDir}/runtime/tls`));
   }
 
   return renderConfig(

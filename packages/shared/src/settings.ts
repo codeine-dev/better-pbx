@@ -43,6 +43,8 @@ export const networkSettingsSchema = z
     tlsEnabled: z.boolean().default(true),
     /** Enable SRTP (SDES) media encryption on SIP endpoints when supported. */
     srtpEnabled: z.boolean().default(false),
+    /** Enable DTLS-SRTP media encryption on SIP endpoints when supported. */
+    dtlsSrtpEnabled: z.boolean().default(false),
   })
   .refine((network) => network.rtpStart <= network.rtpEnd, {
     message: 'rtpStart must be less than or equal to rtpEnd',

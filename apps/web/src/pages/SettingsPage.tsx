@@ -228,6 +228,17 @@ export function SettingsPage() {
             />{' '}
             SRTP (media encryption) enabled
           </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.network.dtlsSrtpEnabled}
+              onChange={(e) =>
+                setForm({ ...form, network: { ...form.network, dtlsSrtpEnabled: e.target.checked } })
+              }
+            />{' '}
+            DTLS-SRTP (media encryption) enabled
+          </label>
         </div>
       </div>
 

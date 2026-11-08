@@ -478,6 +478,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     if (!model) throw setupRequired();
     const tlsPort = model.settings.network.tlsPort;
     const srtpEnabled = model.settings.network.srtpEnabled;
+    const dtlsSrtpEnabled = model.settings.network.dtlsSrtpEnabled;
 
     // TLS handshake check
     const tlsResult: Record<string, unknown> = { port: tlsPort };
@@ -490,6 +491,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           tlsResult.protocol = socket.getProtocol();
           tlsResult.cipher = socket.getCipher();
           tlsResult.authorized = socket.authorized;
+          const peer = socket.getPeerCertificate();
+          tlsResult.subject = peer?.subject ?? null;
+          tlsResult.issuer = peer?.issuer ?? null;
+          tlsResult.selfSigned = Boolean(peer?.subject && JSON.stringify(peer.subject) === JSON.stringify(peer.issuer));
           // Send a SIP OPTIONS request over TLS
           const reqText = [
             'OPTIONS sip:127.0.0.1 SIP/2.0',
@@ -548,13 +553,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const pjsipPath = join(config.configDir, 'asterisk', 'pjsip.conf');
     const pjsipText = existsSync(pjsipPath) ? readFileSync(pjsipPath, 'utf8') : '';
     const srtpConfigured = srtpEnabled && pjsipText.includes('media_encryption = sdes');
+    const dtlsConfigured = dtlsSrtpEnabled && pjsipText.includes('media_encryption = dtls');
+    const certExists = existsSync(join(config.runtimeDir, 'tls', 'sip.crt')) && existsSync(join(config.runtimeDir, 'tls', 'sip.key'));
 
     return {
       tls: tlsResult,
-      sip: { status: sipStatus, response: sipResponse.slice(0, 500) },
-      rtp: rtpResult,
-      srtp: { enabled: srtpEnabled, configured: srtpConfigured },
-      dtlsSrtp: { supported: false, note: 'DTLS-SRTP is not configured in this build' },
+      sip: { ok: sipStatus !== null && [200, 401, 403, 405].includes(sipStatus), status: sipStatus, response: sipResponse.slice(0, 500) },
+      rtp: { ...rtpResult, ok: Boolean(rtpResult.bindable) },
+      srtp: { enabled: srtpEnabled, configured: srtpConfigured, ok: !srtpEnabled || srtpConfigured },
+      dtlsSrtp: { enabled: dtlsSrtpEnabled, configured: dtlsConfigured, certAvailable: certExists, ok: !dtlsSrtpEnabled || (dtlsConfigured && certExists) },
     };
   });
 
