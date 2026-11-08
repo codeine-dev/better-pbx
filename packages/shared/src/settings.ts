@@ -41,6 +41,10 @@ export const networkSettingsSchema = z
     rtpStart: z.number().int().min(1024).max(65535).default(10000),
     rtpEnd: z.number().int().min(1024).max(65535).default(20000),
     tlsEnabled: z.boolean().default(true),
+    /** TLS protocol version for the SIP TLS transport. Empty means Asterisk/OpenSSL default. */
+    tlsMethod: z.enum(['', 'tlsv1', 'tlsv1_1', 'tlsv1_2', 'tlsv1_3']).default('tlsv1_3'),
+    /** Optional OpenSSL cipher list for the SIP TLS transport. Empty means default. */
+    tlsCipher: z.string().trim().max(255).default(''),
     /** Enable SRTP (SDES) media encryption on SIP endpoints when supported. */
     srtpEnabled: z.boolean().default(false),
     /** Enable DTLS-SRTP media encryption on SIP endpoints when supported. */

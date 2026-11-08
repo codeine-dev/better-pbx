@@ -218,6 +218,32 @@ export function SettingsPage() {
             TLS enabled
           </label>
 
+          <div>
+            <label className="label">TLS method</label>
+            <select
+              className="select"
+              value={form.network.tlsMethod}
+              onChange={(e) =>
+                setForm({ ...form, network: { ...form.network, tlsMethod: e.target.value } })
+              }
+            >
+              <option value="">Default</option>
+              <option value="tlsv1">TLS 1.0</option>
+              <option value="tlsv1_1">TLS 1.1</option>
+              <option value="tlsv1_2">TLS 1.2</option>
+              <option value="tlsv1_3">TLS 1.3</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">TLS cipher (optional)</label>
+            <input
+              className="input"
+              value={form.network.tlsCipher}
+              onChange={(e) =>
+                setForm({ ...form, network: { ...form.network, tlsCipher: e.target.value } })
+              }
+            />
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

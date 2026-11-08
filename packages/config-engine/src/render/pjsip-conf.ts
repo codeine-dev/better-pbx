@@ -225,19 +225,19 @@ export function renderPjsipConf(model: PbxModel, paths: RenderPaths): string {
   ];
 
   if (model.settings.network.tlsEnabled) {
+    const tlsLines = [
+      'type = transport',
+      'protocol = tls',
+    ];
+    if (model.settings.network.tlsMethod) tlsLines.push(`method = ${model.settings.network.tlsMethod}`);
+    tlsLines.push(`bind = 0.0.0.0:${model.settings.network.tlsPort}`);
+    tlsLines.push(`cert_file = ${paths.dataDir}/runtime/tls/sip.crt`);
+    tlsLines.push(`priv_key_file = ${paths.dataDir}/runtime/tls/sip.key`);
+    if (model.settings.network.tlsCipher) tlsLines.push(`cipher = ${model.settings.network.tlsCipher}`);
+    tlsLines.push('verify_client = no', 'require_client_cert = no', 'allow_reload = yes');
     sections.push({
       name: 'transport-tls',
-      lines: [
-        'type = transport',
-        'protocol = tls',
-        'method = tlsv1_3',
-        `bind = 0.0.0.0:${model.settings.network.tlsPort}`,
-        `cert_file = ${paths.dataDir}/runtime/tls/sip.crt`,
-        `priv_key_file = ${paths.dataDir}/runtime/tls/sip.key`,
-        'verify_client = no',
-        'require_client_cert = no',
-        'allow_reload = yes',
-      ],
+      lines: tlsLines,
     });
   }
 
