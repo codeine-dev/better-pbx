@@ -7,6 +7,7 @@ import {
   extensionNumberSchema,
   isIp,
   resourceIdSchema,
+  hasControlCharacters,
   sipSecretSchema,
   trunkNameSchema,
 } from './primitives.js';
@@ -38,7 +39,7 @@ export const mailboxSchema = z
       .optional(),
     email: z
       .email('must be a valid email address')
-      .refine((value) => !/[\r\n\0-\x1f\x7f]/.test(value), 'must not contain control characters')
+      .refine((value) => !hasControlCharacters(value), 'must not contain control characters')
       .optional(),
   })
   .refine((mailbox) => !mailbox.enabled || mailbox.pin !== undefined, {
@@ -73,11 +74,11 @@ export const trunkSchema = z
     host: hostSchema,
     port: z.number().int().min(1).max(65535).default(5060),
     transport: transportSchema.default('udp'),
-    username: z.string().trim().min(1).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
-    password: z.string().min(8).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
-    fromUser: z.string().trim().min(1).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
-    fromDomain: z.string().trim().min(1).max(253).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
-    callerId: z.string().trim().max(64).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
+    username: z.string().trim().min(1).max(128).refine((v) => !hasControlCharacters(v), 'must not contain control characters').optional(),
+    password: z.string().min(8).max(128).refine((v) => !hasControlCharacters(v), 'must not contain control characters').optional(),
+    fromUser: z.string().trim().min(1).max(128).refine((v) => !hasControlCharacters(v), 'must not contain control characters').optional(),
+    fromDomain: z.string().trim().min(1).max(253).refine((v) => !hasControlCharacters(v), 'must not contain control characters').optional(),
+    callerId: z.string().trim().max(64).refine((v) => !hasControlCharacters(v), 'must not contain control characters').optional(),
     codecs: codecListSchema,
     inboundMode: trunkInboundModeSchema.default('registration'),
     providerCidrs: z.array(z.string().trim().min(1)).default([]),

@@ -111,12 +111,20 @@ export const trunkNameSchema = z
   .max(64)
   .regex(/^[a-z0-9][a-z0-9-]*$/, 'must be a lowercase slug');
 
+export function hasControlCharacters(value: string): boolean {
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code < 0x20 || code === 0x7f) return true;
+  }
+  return false;
+}
+
 export const displayNameSchema = z
   .string()
   .trim()
   .min(1)
   .max(64)
-  .refine((value) => !/[\r\n\0-\x1f\x7f]/.test(value), 'must not contain control characters');
+  .refine((value) => !hasControlCharacters(value), 'must not contain control characters');
 
 export const sipSecretSchema = z
   .string()

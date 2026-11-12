@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isoDateTimeSchema } from './primitives.js';
+import { hasControlCharacters, isoDateTimeSchema } from './primitives.js';
 import {
   extensionSchema,
   inboundRouteSchema,
@@ -28,7 +28,7 @@ export const metaSchema = z.object({
     .trim()
     .min(1)
     .max(64)
-    .refine((value) => !/[\r\n\0-\x1f\x7f]/.test(value), 'must not contain control characters')
+    .refine((value) => !hasControlCharacters(value), 'must not contain control characters')
     .default('BetterPBX'),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,

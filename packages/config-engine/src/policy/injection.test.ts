@@ -8,7 +8,7 @@ describe('config injection hardening', () => {
     const malicious = 'alice"\r\nexten => hacked,1,Hangup()\x00';
     const sanitized = sanitizeValue(malicious);
     expect(sanitized).not.toMatch(/[\r\n"]/);
-    expect(sanitized).not.toMatch(/\x00/);
+    expect(sanitized).not.toContain('\u0000');
   });
 
   it('rendered scan rejects a dialplan catch-all introduced through config', () => {

@@ -58,5 +58,14 @@ export function extension(numberOrPattern: string, actions: string[]): string[] 
 
 /** Strip characters that would break an Asterisk value or allow config injection. */
 export function sanitizeValue(value: string): string {
-  return value.replace(/[,\r\n"\\]/g, ' ').replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+  let out = '';
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code < 0x20 || code === 0x7f || char === ',' || char === '"' || char === '\\') {
+      out += ' ';
+    } else {
+      out += char;
+    }
+  }
+  return out.trim();
 }
