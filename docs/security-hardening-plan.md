@@ -7,12 +7,12 @@ Source review: `docs/security-hardening-plan.md` is the working plan for closing
 - Add a security regression test harness so every guardrail is continuously verified.
 - Preserve compatibility unless a security invariant requires otherwise.
 
-## Decisions needed before implementation
-1. **Network restrictions**: enforce `localNetworks`/`remotePhone` in rendered Asterisk config, or remove those unused model fields.
-2. **Media encryption**: keep SRTP/DTLS opt-in (compatibility), or make a hardened preset/default-on.
-3. **ACL precedence**: should an explicit whitelist override an automatic ban, or must bans always win?
-4. **callerIdFilter**: restrict to a safe regex subset, or remove the feature.
-5. **Voicemail PIN policy**: enforce minimum entropy/length, and at what level.
+## Decisions (resolved)
+1. **Network restrictions**: removed unused `localNetworks`/`remotePhone` fields.
+2. **Media encryption**: SRTP now defaults on (SDES); DTLS remains opt-in.
+3. **ACL precedence**: whitelist overrides automatic bans.
+4. **callerIdFilter**: restricted to reject quotes, backslashes, newlines, and dollar signs.
+5. **Voicemail PIN policy**: moderate policy (min 4 digits, no repeated/simple sequences).
 
 ## Phase 0 — Test harness (security regression suite)
 Create tests before changing behavior:
