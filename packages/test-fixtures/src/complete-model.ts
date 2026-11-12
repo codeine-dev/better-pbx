@@ -31,7 +31,6 @@ export function buildCompleteModel(): PbxModel {
       network: {
         ...base.settings.network,
         externalAddress: 'sip.example.net',
-        localNetworks: ['192.168.10.0/24'],
         rtpStart: 12000,
         rtpEnd: 13000,
         tlsEnabled: true,
