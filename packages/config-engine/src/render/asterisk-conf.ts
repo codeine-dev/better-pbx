@@ -28,8 +28,6 @@ export function renderAsteriskConf(paths: RenderPaths): string {
         'astctlowner => asterisk',
         'astctlgroup => pbx',
         'astctlpermissions => 0660',
-        'verbose = 5',
-        'debug = 5',
       ],
     },
   ];

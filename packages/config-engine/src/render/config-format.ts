@@ -56,7 +56,7 @@ export function extension(numberOrPattern: string, actions: string[]): string[] 
   return [`exten => ${numberOrPattern},1,${first}`, ...rest.map((action) => same(action))];
 }
 
-/** Strip characters that would break a CSV-like Asterisk value (names, caller IDs). */
+/** Strip characters that would break an Asterisk value or allow config injection. */
 export function sanitizeValue(value: string): string {
-  return value.replace(/[,\r\n]/g, ' ').trim();
+  return value.replace(/[,\r\n"\\]/g, ' ').replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
 }

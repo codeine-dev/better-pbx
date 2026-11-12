@@ -18,7 +18,8 @@ export function renderLoggerConf(): string {
     },
     {
       name: 'logfiles',
-      lines: ['console => notice,warning,error', 'messages => notice,warning,error', 'security => security', 'sip => verbose,debug'],    },
+      lines: ['console => notice,warning,error', 'messages => notice,warning,error', 'security => security'],
+    },
   ];
 
   return renderConfig(

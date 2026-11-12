@@ -9,7 +9,7 @@ export function renderRtpConf(network: NetworkSettings): string {
       lines: [
         `rtpstart = ${network.rtpStart}`,
         `rtpend = ${network.rtpEnd}`,
-        'rtpchecksums = no',
+        'rtpchecksums = yes',
         'strictrtp = yes',
         'icesupport = no',
       ],

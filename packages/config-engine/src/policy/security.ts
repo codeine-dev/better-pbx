@@ -149,8 +149,6 @@ function checkNetworkAndAcls(model: PbxModel, issues: PolicyIssue[]): void {
   const security = model.settings.security;
   validateCidrList(security.whitelist, 'settings.security.whitelist', 'whitelist', issues);
   validateCidrList(security.blacklist, 'settings.security.blacklist', 'blacklist', issues);
-  validateCidrList(model.settings.network.localNetworks, 'settings.network.localNetworks', 'local network', issues);
-
   for (let whiteIndex = 0; whiteIndex < security.whitelist.length; whiteIndex += 1) {
     for (let blackIndex = 0; blackIndex < security.blacklist.length; blackIndex += 1) {
       const white = normalizeCidr(security.whitelist[whiteIndex] ?? '');
@@ -333,12 +331,12 @@ function checkInboundRoutes(model: PbxModel, issues: PolicyIssue[]): void {
         ),
       );
     }
-    if (/["\r\n\\]/.test(route.callerIdFilter ?? '')) {
+    if (/["\r\n\\$]/.test(route.callerIdFilter ?? '')) {
       issues.push(
         issue(
           'invalid-callerid-filter',
           `inboundRoutes[${index}].callerIdFilter`,
-          'callerIdFilter must be a safe regular expression without quotes, backslashes, or newlines',
+          'callerIdFilter must be a safe regular expression without quotes, backslashes, newlines, or dollar signs',
         ),
       );
     }
