@@ -145,25 +145,6 @@ export function SettingsPage() {
             />
           </div>
           <div>
-            <label className="label">Local networks (comma)</label>
-            <input
-              className="input"
-              value={form.network.localNetworks.join(',')}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  network: {
-                    ...form.network,
-                    localNetworks: e.target.value
-                      .split(',')
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  },
-                })
-              }
-            />
-          </div>
-          <div>
             <label className="label">SIP port</label>
             <input
               type="number"
@@ -224,12 +205,10 @@ export function SettingsPage() {
               className="select"
               value={form.network.tlsMethod}
               onChange={(e) =>
-                setForm({ ...form, network: { ...form.network, tlsMethod: e.target.value as '' | 'tlsv1' | 'tlsv1_1' | 'tlsv1_2' | 'tlsv1_3' } })
+                setForm({ ...form, network: { ...form.network, tlsMethod: e.target.value as '' | 'tlsv1_2' | 'tlsv1_3' } })
               }
             >
               <option value="">Default</option>
-              <option value="tlsv1">TLS 1.0</option>
-              <option value="tlsv1_1">TLS 1.1</option>
               <option value="tlsv1_2">TLS 1.2</option>
               <option value="tlsv1_3">TLS 1.3</option>
             </select>

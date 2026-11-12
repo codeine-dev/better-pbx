@@ -13,7 +13,6 @@ interface ExtForm {
   enabled: boolean;
   transport: 'udp' | 'tls';
   maxContacts: number;
-  remotePhone: boolean;
   callerId: string;
   vmEnabled: boolean;
   vmPin: string;
@@ -28,7 +27,6 @@ const emptyForm = (): ExtForm => ({
   enabled: true,
   transport: 'udp',
   maxContacts: 2,
-  remotePhone: false,
   callerId: '',
   vmEnabled: false,
   vmPin: '',
@@ -44,7 +42,6 @@ function toForm(e: Extension): ExtForm {
     enabled: e.enabled,
     transport: e.transport,
     maxContacts: e.maxContacts,
-    remotePhone: e.remotePhone,
     callerId: e.callerId ?? '',
     vmEnabled: e.voicemail.enabled,
     vmPin: e.voicemail.pin ?? '',
@@ -61,7 +58,6 @@ function fromForm(f: ExtForm) {
     enabled: f.enabled,
     transport: f.transport,
     maxContacts: f.maxContacts,
-    remotePhone: f.remotePhone,
     callerId: f.callerId || undefined,
     voicemail: {
       enabled: f.vmEnabled,
@@ -209,11 +205,6 @@ export function ExtensionsPage() {
             <input type="checkbox" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
             Enabled
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.remotePhone} onChange={(e) => setForm({ ...form, remotePhone: e.target.checked })} />
-            Allow remote registration (still authenticated)
-          </label>
-
           <div className="rounded border border-[var(--border)] p-3 space-y-3">
             <label className="flex items-center gap-2 text-sm font-medium">
               <input type="checkbox" checked={form.vmEnabled} onChange={(e) => setForm({ ...form, vmEnabled: e.target.checked })} />
