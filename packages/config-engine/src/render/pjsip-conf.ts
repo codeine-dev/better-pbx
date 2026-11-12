@@ -30,6 +30,7 @@ function extensionSections(extension: Extension, mediaMode: 'none' | 'sdes' | 'd
       lines: [
         'type = auth',
         'auth_type = userpass',
+        'realm = asterisk',
         `username = ${extension.number}`,
         `password = ${extension.secret}`,
       ],
@@ -96,6 +97,7 @@ function trunkSections(trunk: Trunk, mediaMode: 'none' | 'sdes' | 'dtls', certPa
       lines: [
         'type = auth',
         'auth_type = userpass',
+        'realm = asterisk',
         `username = ${trunk.username}`,
         `password = ${trunk.password}`,
       ],
