@@ -76,8 +76,8 @@ export function IvrsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">IVRs</h1>
-      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+      <h1 className="text-3xl font-extrabold">IVRs</h1>
+      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
         <div className="card-header">
@@ -148,7 +148,7 @@ export function IvrsPage() {
           {(ivrs ?? []).length === 0 ? <div className="empty">No IVRs yet.</div> : (
             <ul className="space-y-2">
               {(ivrs ?? []).map((i: Ivr) => (
-                <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-black/20 p-3">
+                <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{i.name}{i.number ? ` — ${i.number}` : ''}</div>
                     <div className="text-xs text-[var(--muted)]">{i.options.length} options · timeout {i.timeoutSeconds}s · {i.directDial ? 'direct dial' : ''}</div>

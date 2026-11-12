@@ -15,10 +15,10 @@ export function SnapshotsPage() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Snapshots</h1>
+        <h1 className="text-3xl font-extrabold">Snapshots</h1>
         <ul className="space-y-1">
           {(data ?? []).map((s) => (
-            <li key={s.sha} className="flex items-center justify-between rounded border border-slate-800 bg-slate-900 p-2 text-sm">
+            <li key={s.sha} className="flex items-center justify-between rounded border border-[var(--border)] bg-[var(--panel-2)] p-2 text-sm">
               <button className="text-left" onClick={() => setSelected(s.sha)}>
                 {s.shortSha} — {s.message}
               </button>
@@ -27,7 +27,7 @@ export function SnapshotsPage() {
           ))}
         </ul>
       </div>
-      <div className="rounded border border-slate-800 bg-slate-900 p-3">
+      <div className="rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
         <h2 className="mb-2 text-lg font-medium">Diff</h2>
         <pre className="max-h-96 overflow-auto text-xs">{diff.data?.diff ?? 'Select a snapshot'}</pre>
       </div>

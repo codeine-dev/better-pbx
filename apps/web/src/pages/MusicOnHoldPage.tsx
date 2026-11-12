@@ -44,8 +44,8 @@ export function MusicOnHoldPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Music on hold</h1>
-      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+      <h1 className="text-3xl font-extrabold">Music on hold</h1>
+      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
         <div className="card-header"><span className="font-medium">Add hold music</span></div>
@@ -65,7 +65,7 @@ export function MusicOnHoldPage() {
           {(items ?? []).length === 0 ? <div className="empty">No hold music yet.</div> : (
             <ul className="space-y-2">
               {(items ?? []).map((m: MusicOnHold) => (
-                <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-black/20 p-3">
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{m.name}</div>
                     <div className="text-xs text-[var(--muted)]">{m.id}</div>

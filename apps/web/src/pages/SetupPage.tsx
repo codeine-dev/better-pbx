@@ -29,24 +29,30 @@ export function SetupPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-6 text-slate-100">
-      <form onSubmit={submit} className="w-full max-w-md space-y-4 rounded-lg border border-slate-800 bg-slate-900 p-6">
-        <h1 className="text-2xl font-semibold">Initial setup</h1>
-        <p className="text-sm text-slate-400">Enter the one-time setup code from the container logs.</p>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        <label className="block">
-          <span className="text-sm">Setup code</span>
-          <input className="mt-1 w-full rounded border border-slate-700 bg-slate-800 px-3 py-2" value={setupCode} onChange={(e) => setSetupCode(e.target.value)} />
+    <main className="grid min-h-screen place-items-center bg-[var(--bg)] px-6 text-[var(--text)]">
+      <form onSubmit={submit} className="w-full max-w-md space-y-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 shadow-lg">
+        <div className="mb-2 flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)] text-white font-extrabold">P</div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-[var(--text-strong)]">Initial setup</h1>
+            <p className="text-xs font-semibold text-[var(--muted)]">One-time setup code from container logs</p>
+          </div>
+        </div>
+        <p className="text-sm text-[var(--muted)]">Enter the one-time setup code from the container logs.</p>
+        {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+        <label className="block space-y-1">
+          <span className="label">Setup code</span>
+          <input className="input" value={setupCode} onChange={(e) => setSetupCode(e.target.value)} />
         </label>
-        <label className="block">
-          <span className="text-sm">Admin username</span>
-          <input className="mt-1 w-full rounded border border-slate-700 bg-slate-800 px-3 py-2" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <label className="block space-y-1">
+          <span className="label">Admin username</span>
+          <input className="input" value={username} onChange={(e) => setUsername(e.target.value)} />
         </label>
-        <label className="block">
-          <span className="text-sm">Admin password</span>
-          <input type="password" className="mt-1 w-full rounded border border-slate-700 bg-slate-800 px-3 py-2" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <label className="block space-y-1">
+          <span className="label">Admin password</span>
+          <input type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
-        <button disabled={loading} className="w-full rounded bg-emerald-600 px-3 py-2 font-medium hover:bg-emerald-500 disabled:opacity-50">
+        <button disabled={loading} className="btn btn-primary w-full">
           {loading ? 'Setting up…' : 'Complete setup'}
         </button>
       </form>

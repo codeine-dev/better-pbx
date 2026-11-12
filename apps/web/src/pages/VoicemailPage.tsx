@@ -10,7 +10,7 @@ export function VoicemailPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Voicemail</h1>
+      <h1 className="text-3xl font-extrabold">Voicemail</h1>
       <div className="card">
         <div className="card-header"><span className="font-medium">Mailboxes</span><span className="badge">{vmExts.length}</span></div>
         <div className="card-body">
@@ -19,7 +19,7 @@ export function VoicemailPage() {
           ) : (
             <ul className="space-y-2">
               {vmExts.map((e) => (
-                <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-black/20 p-3">
+                <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{e.number} — {e.displayName}</div>
                     <div className="text-xs text-[var(--muted)]">

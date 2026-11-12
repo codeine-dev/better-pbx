@@ -23,12 +23,15 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <div className="page-heading">
+        <h1 className="text-3xl font-extrabold">Dashboard</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">Overview of your PBX configuration.</p>
+      </div>
       <div className="grid-cards">
         {cards.map((c) => (
-          <Link key={c.label} to={c.to} className="card card-body block hover:border-[var(--accent)]">
-            <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{c.label}</div>
-            <div className="mt-2 text-3xl font-semibold">{c.value}</div>
+          <Link key={c.label} to={c.to} className="card card-body block transition hover:-translate-y-1 hover:shadow-md">
+            <div className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{c.label}</div>
+            <div className="mt-2 text-3xl font-extrabold text-[var(--accent)]">{c.value}</div>
           </Link>
         ))}
       </div>

@@ -51,14 +51,14 @@ export function LogsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Logs</h1>
+        <h1 className="text-3xl font-extrabold">Logs</h1>
         <div className="flex items-center gap-3 text-sm">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={live} onChange={(e) => setLive(e.target.checked)} />
             Live
           </label>
           <select
-            className="rounded border border-slate-700 bg-slate-800 px-2 py-1"
+            className="rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1 text-[var(--text)]"
             value={tail}
             onChange={(e) => setTail(Number(e.target.value))}
           >
@@ -73,7 +73,7 @@ export function LogsPage() {
         {FILES.map((f) => (
           <button
             key={f.id}
-            className={`rounded px-3 py-1 ${file === f.id ? 'bg-emerald-600 text-white' : 'bg-slate-800'}`}
+            className={`rounded px-3 py-1 ${file === f.id ? 'bg-emerald-600 text-white' : 'bg-[var(--panel-2)] text-[var(--text)] border border-[var(--border)]'}`}
             onClick={() => setFile(f.id)}
           >
             {f.label}
@@ -83,7 +83,7 @@ export function LogsPage() {
 
       {file === 'sip' && (
         <>
-          <div className="flex flex-wrap items-center gap-3 rounded border border-slate-800 bg-slate-900/50 p-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3 text-sm">
             <span>SIP tracing: {traceStatus?.enabled ? 'ON' : 'OFF'}</span>
             <button
               className={`rounded px-3 py-1 ${traceStatus?.enabled ? 'bg-rose-600' : 'bg-emerald-600'} text-white`}
@@ -92,12 +92,12 @@ export function LogsPage() {
             >
               {traceStatus?.enabled ? 'Stop trace' : 'Start trace'}
             </button>
-            <span className="text-slate-400">
+            <span className="text-[var(--muted)]">
               Enables the PJSIP logger; live traces stream below. Disable when finished to avoid logging secrets.
             </span>
           </div>
           {lastTraceResult && (
-            <pre className="max-h-40 overflow-auto rounded border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300">
+            <pre className="max-h-40 overflow-auto rounded border border-[var(--border)] bg-[var(--panel-2)] p-2 text-xs text-[var(--text)]">
               {lastTraceResult}
             </pre>
           )}
@@ -106,7 +106,7 @@ export function LogsPage() {
 
       <pre
         ref={preRef}
-        className="max-h-[70vh] overflow-auto rounded border border-slate-800 bg-slate-900 p-3 text-xs whitespace-pre-wrap"
+        className="max-h-[70vh] overflow-auto rounded border border-[var(--border)] bg-[var(--panel-2)] p-3 text-xs whitespace-pre-wrap"
       >
         {lines.join('\n')}
       </pre>

@@ -129,18 +129,18 @@ export function ExtensionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Extensions</h1>
+        <h1 className="text-3xl font-extrabold">Extensions</h1>
       </div>
 
       {revealed && (
         <div className="card card-body border-[var(--success)]">
-          <div className="text-sm font-medium text-[#86efac]">Secret (shown once)</div>
-          <code className="mt-2 block break-all rounded bg-black/40 p-2 text-sm">{revealed}</code>
+          <div className="text-sm font-medium text-[var(--success)]">Secret (shown once)</div>
+          <code className="mt-2 block break-all rounded bg-[var(--panel-2)] p-2 text-sm">{revealed}</code>
           <button className="btn btn-ghost mt-3" onClick={() => setRevealed(null)}>Dismiss</button>
         </div>
       )}
 
-      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
         <div className="card-header">
@@ -247,7 +247,7 @@ export function ExtensionsPage() {
           ) : (
             <ul className="space-y-2">
               {(data ?? []).map((ext) => (
-                <li key={ext.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-black/20 p-3">
+                <li key={ext.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{ext.number} — {ext.displayName}</div>
                     <div className="text-xs text-[var(--muted)]">

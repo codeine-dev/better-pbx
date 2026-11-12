@@ -45,9 +45,9 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <h1 className="text-3xl font-extrabold">Settings</h1>
       {error && (
-        <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
+        <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">
           {error}
         </div>
       )}
@@ -428,7 +428,7 @@ export function SettingsPage() {
           <div className="space-y-3 text-sm">
             <div>
               <div className="font-medium">Claude Desktop</div>
-              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">
+              <pre className="mt-1 overflow-auto rounded bg-[var(--panel-2)] p-2 text-xs">
                 {JSON.stringify(
                   {
                     mcpServers: {
@@ -445,7 +445,7 @@ export function SettingsPage() {
             </div>
             <div>
               <div className="font-medium">OpenAI (Codex / Agents)</div>
-              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">{`# Add to your MCP client config
+              <pre className="mt-1 overflow-auto rounded bg-[var(--panel-2)] p-2 text-xs">{`# Add to your MCP client config
 url: ${window.location.origin}${mcp?.path ?? '/mcp'}
 transport: streamable-http
 headers:
@@ -453,7 +453,7 @@ headers:
             </div>
             <div>
               <div className="font-medium">OpenCode</div>
-              <pre className="mt-1 overflow-auto rounded bg-black/30 p-2 text-xs">
+              <pre className="mt-1 overflow-auto rounded bg-[var(--panel-2)] p-2 text-xs">
                 {JSON.stringify(
                   {
                     mcp: {
@@ -523,7 +523,7 @@ headers:
             <button className="btn" onClick={async () => { setTlsMsg(null); try { const r = await api.tlsValidate(); setTlsValidation(r); setTlsMsg('Validation complete.'); } catch (e) { setTlsMsg(e instanceof Error ? e.message : 'Failed'); } }}>Validate SIPS/SRTP</button>
           </div>
           {tlsValidation && (
-            <pre className="mt-2 overflow-auto rounded bg-black/30 p-2 text-xs">
+            <pre className="mt-2 overflow-auto rounded bg-[var(--panel-2)] p-2 text-xs">
               {JSON.stringify(tlsValidation, null, 2)}
             </pre>
           )}

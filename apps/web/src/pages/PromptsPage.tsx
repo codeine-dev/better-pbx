@@ -38,8 +38,8 @@ export function PromptsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Prompts</h1>
-      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+      <h1 className="text-3xl font-extrabold">Prompts</h1>
+      {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
         <div className="card-header"><span className="font-medium">Upload prompt</span></div>
@@ -56,7 +56,7 @@ export function PromptsPage() {
           {(prompts ?? []).length === 0 ? <div className="empty">No prompts yet.</div> : (
             <ul className="space-y-2">
               {(prompts ?? []).map((p: Prompt) => (
-                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-black/20 p-3">
+                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{p.name}</div>
                     <div className="text-xs text-[var(--muted)]">{p.kind} · {p.file}{p.originalName ? ` · ${p.originalName}` : ''}</div>
