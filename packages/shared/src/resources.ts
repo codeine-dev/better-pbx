@@ -27,8 +27,19 @@ export type Transport = z.infer<typeof transportSchema>;
 export const mailboxSchema = z
   .object({
     enabled: z.boolean().default(false),
-    pin: z.string().regex(/^[0-9]{3,10}$/, 'voicemail PIN must be 3-10 digits').optional(),
-    email: z.email('must be a valid email address').optional(),
+    pin: z
+      .string()
+      .regex(/^[0-9]{4,10}$/, 'voicemail PIN must be 4-10 digits')
+      .refine((pin) => !/^(.)\1+$/.test(pin), 'voicemail PIN must not be a repeated digit')
+      .refine(
+        (pin) => !['0123456789', '9876543210', '1234567890'].some((seq) => seq.includes(pin)),
+        'voicemail PIN must not be a simple sequence',
+      )
+      .optional(),
+    email: z
+      .email('must be a valid email address')
+      .refine((value) => !/[\r\n\0-\x1f\x7f]/.test(value), 'must not contain control characters')
+      .optional(),
   })
   .refine((mailbox) => !mailbox.enabled || mailbox.pin !== undefined, {
     message: 'a voicemail PIN is required when voicemail is enabled',
@@ -48,8 +59,6 @@ export const extensionSchema = z.object({
   callerId: z.string().trim().max(64).optional(),
   transport: transportSchema.default('udp'),
   maxContacts: z.number().int().min(1).max(10).default(2),
-  /** Allows this extension to register from outside localNetworks; still authenticated. */
-  remotePhone: z.boolean().default(false),
 });
 
 export type Extension = z.infer<typeof extensionSchema>;
@@ -64,11 +73,11 @@ export const trunkSchema = z
     host: hostSchema,
     port: z.number().int().min(1).max(65535).default(5060),
     transport: transportSchema.default('udp'),
-    username: z.string().trim().min(1).max(128).optional(),
-    password: z.string().min(8).max(128).optional(),
-    fromUser: z.string().trim().min(1).max(128).optional(),
-    fromDomain: z.string().trim().min(1).max(253).optional(),
-    callerId: z.string().trim().max(64).optional(),
+    username: z.string().trim().min(1).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
+    password: z.string().min(8).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
+    fromUser: z.string().trim().min(1).max(128).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
+    fromDomain: z.string().trim().min(1).max(253).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
+    callerId: z.string().trim().max(64).refine((v) => !/[\r\n\0-\x1f\x7f]/.test(v), 'must not contain control characters').optional(),
     codecs: codecListSchema,
     inboundMode: trunkInboundModeSchema.default('registration'),
     providerCidrs: z.array(z.string().trim().min(1)).default([]),
@@ -121,7 +130,12 @@ export const inboundRouteSchema = z.object({
   did: z.string().trim().min(1).max(64),
   trunkId: resourceIdSchema.optional(),
   destination: destinationSchema,
-  callerIdFilter: z.string().trim().max(128).optional(),
+  callerIdFilter: z
+    .string()
+    .trim()
+    .max(128)
+    .refine((value) => !/["\r\n\\$]/.test(value), 'callerIdFilter must not contain quotes, backslashes, newlines, or dollar signs')
+    .optional(),
   enabled: z.boolean().default(true),
 });
 

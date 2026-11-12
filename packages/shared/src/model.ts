@@ -23,7 +23,13 @@ export const schemaVersionSchema = z.literal(CONFIG_SCHEMA_VERSION);
 export type SchemaVersion = z.infer<typeof schemaVersionSchema>;
 
 export const metaSchema = z.object({
-  pbxName: z.string().trim().min(1).max(64).default('BetterPBX'),
+  pbxName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .refine((value) => !/[\r\n\0-\x1f\x7f]/.test(value), 'must not contain control characters')
+    .default('BetterPBX'),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
 });

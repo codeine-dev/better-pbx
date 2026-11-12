@@ -120,7 +120,6 @@ describe('resource factories', () => {
       enabled: true,
       transport: 'udp',
       maxContacts: 2,
-      remotePhone: false,
       voicemail: { enabled: false },
     });
     expect(extension.secret.length).toBeGreaterThanOrEqual(8);

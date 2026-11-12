@@ -35,18 +35,22 @@ export type RegionSettings = z.infer<typeof regionSettingsSchema>;
 export const networkSettingsSchema = z
   .object({
     externalAddress: z.string().trim().min(1).max(255).nullable().default(null),
-    localNetworks: cidrListSchema,
     sipPort: z.number().int().min(1).max(65535).default(5060),
     tlsPort: z.number().int().min(1).max(65535).default(5061),
     rtpStart: z.number().int().min(1024).max(65535).default(10000),
     rtpEnd: z.number().int().min(1024).max(65535).default(20000),
     tlsEnabled: z.boolean().default(true),
     /** TLS protocol version for the SIP TLS transport. Empty means Asterisk/OpenSSL default. */
-    tlsMethod: z.enum(['', 'tlsv1', 'tlsv1_1', 'tlsv1_2', 'tlsv1_3']).default('tlsv1_3'),
+    tlsMethod: z.enum(['', 'tlsv1_2', 'tlsv1_3']).default('tlsv1_3'),
     /** Optional OpenSSL cipher list for the SIP TLS transport. Empty means default. */
-    tlsCipher: z.string().trim().max(255).default(''),
+    tlsCipher: z
+      .string()
+      .trim()
+      .max(255)
+      .regex(/^[A-Za-z0-9:+!@\- ]*$/, 'tlsCipher must be an OpenSSL cipher list')
+      .default(''),
     /** Enable SRTP (SDES) media encryption on SIP endpoints when supported. */
-    srtpEnabled: z.boolean().default(false),
+    srtpEnabled: z.boolean().default(true),
     /** Enable DTLS-SRTP media encryption on SIP endpoints when supported. */
     dtlsSrtpEnabled: z.boolean().default(false),
   })
@@ -82,7 +86,7 @@ export type SecuritySettings = z.infer<typeof securitySettingsSchema>;
 export const voicemailSettingsSchema = z.object({
   maxMessages: z.number().int().min(1).max(10_000).default(100),
   maxSeconds: z.number().int().min(10).max(3600).default(180),
-  defaultPinLength: z.number().int().min(3).max(10).default(4),
+  defaultPinLength: z.number().int().min(4).max(10).default(4),
 });
 
 export type VoicemailSettings = z.infer<typeof voicemailSettingsSchema>;
