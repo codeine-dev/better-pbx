@@ -51,6 +51,9 @@ export function scanRenderedConfig(
   if (/\[anonymous\]/i.test(pjsip) || /identify_by\s*=\s*anonymous/i.test(pjsip)) {
     issues.push(issue('anonymous-endpoint', 'asterisk/pjsip.conf', 'anonymous PJSIP endpoint detected'));
   }
+  if (/method\s*=\s*tlsv1(?:_1)?\b/i.test(pjsip)) {
+    issues.push(issue('weak-tls', 'asterisk/pjsip.conf', 'TLS versions below 1.2 must not be enabled'));
+  }
   if (/auth_type\s*=\s*none/i.test(pjsip)) {
     issues.push(issue('no-auth', 'asterisk/pjsip.conf', 'unauthenticated PJSIP auth object detected'));
   }
@@ -103,6 +106,9 @@ export function scanRenderedConfig(
   const logger = files['asterisk/logger.conf'] ?? '';
   if (!logger.includes('security => security')) {
     issues.push(issue('security-log-disabled', 'asterisk/logger.conf', 'fail2ban security log is not enabled'));
+  }
+  if (/\b(debug|verbose)\b/i.test(logger)) {
+    issues.push(issue('debug-logging', 'asterisk/logger.conf', 'production logging must not enable debug or verbose channels'));
   }
 
   const modules = files['asterisk/modules.conf'] ?? '';
