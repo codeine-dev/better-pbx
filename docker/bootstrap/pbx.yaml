@@ -18,7 +18,6 @@ settings:
     outsidePrefix: '9'
   network:
     externalAddress: null
-    localNetworks: []
     sipPort: 5060
     tlsPort: 5061
     rtpStart: 10000
