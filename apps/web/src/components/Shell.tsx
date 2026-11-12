@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
+import { api } from '../lib/api';
 
 const navGroups = [
   { title: 'Overview', items: [
@@ -32,6 +34,7 @@ const navGroups = [
 export function Shell({ children }: { children?: React.ReactNode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { data: sys } = useQuery({ queryKey: ['system-status'], queryFn: api.systemStatus, staleTime: 60_000 });
   const [dark, setDark] = useState(() => (typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false));
 
   useEffect(() => {
@@ -79,6 +82,9 @@ export function Shell({ children }: { children?: React.ReactNode }) {
         </nav>
         <div className="mt-auto border-t border-[var(--border)] p-6">
           <div className="mb-3 px-2 text-xs font-semibold text-[var(--muted)]">{user?.username}</div>
+          <div className="mb-3 px-2 text-[10px] font-mono text-[var(--muted)]">
+            v{sys?.version ?? '…'} · {sys?.gitHead ? sys.gitHead.slice(0, 7) : 'dev'}
+          </div>
           <div className="flex gap-2">
             <button className="btn btn-ghost flex-1" onClick={toggleTheme} aria-label="Toggle theme">
               {dark ? '☀ Light' : '☾ Dark'}
