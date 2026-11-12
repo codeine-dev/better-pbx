@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Destination, Ivr, Prompt } from '@better-pbx/shared';
 import { api } from '../lib/api';
 import { DestinationPicker } from '../components/DestinationPicker';
+import { EmptyState } from '../components/EmptyState';
+import { useToast } from '../components/Toast';
 
 const defaultDest: Destination = { type: 'hangup' };
 
@@ -26,12 +28,25 @@ const empty = (): Form => ({
 
 export function IvrsPage() {
   const qc = useQueryClient();
+  const toast = useToast();
   const { data: ivrs } = useQuery({ queryKey: ['ivrs'], queryFn: api.ivrs });
   const { data: prompts } = useQuery({ queryKey: ['prompts'], queryFn: api.prompts });
   const [form, setForm] = useState<Form>(empty());
+  const [original, setOriginal] = useState<Form | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
   const invalidate = () => void qc.invalidateQueries({ queryKey: ['ivrs'] });
+
+  const dirty = JSON.stringify(form) !== JSON.stringify(editing ? original : empty());
+
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
 
   const create = useMutation({
     mutationFn: () => api.createIvr({
@@ -45,7 +60,7 @@ export function IvrsPage() {
       invalidDestination: form.invalidDestination ?? undefined,
       directDial: form.directDial,
     }),
-    onSuccess: () => { setForm(empty()); setError(null); invalidate(); },
+    onSuccess: () => { toast.push(`IVR ${form.name} created`, 'success'); setForm(empty()); setOriginal(null); setError(null); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
   const update = useMutation({
@@ -58,12 +73,12 @@ export function IvrsPage() {
         directDial: form.directDial,
       });
     },
-    onSuccess: () => { setEditing(null); setForm(empty()); setError(null); invalidate(); },
+    onSuccess: () => { toast.push(`IVR ${form.name} updated`, 'success'); setEditing(null); setForm(empty()); setOriginal(null); setError(null); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
   const remove = useMutation({
     mutationFn: (id: string) => api.deleteIvr(id),
-    onSuccess: () => invalidate(),
+    onSuccess: () => { toast.push('IVR deleted', 'success'); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
 
@@ -73,16 +88,54 @@ export function IvrsPage() {
   function updateOption(i: number, patch: Partial<IvrOptionForm>) {
     setForm({ ...form, options: form.options.map((o, idx) => idx === i ? { ...o, ...patch } : o) });
   }
+  function startEdit(i: Ivr) {
+    setEditing(i.id);
+    const f = {
+      name: i.name, number: i.number ?? '', greetingPromptId: i.greetingPromptId,
+      timeoutSeconds: i.timeoutSeconds, maxRetries: i.maxRetries,
+      options: i.options.map((o) => ({ digit: o.digit, destination: o.destination })),
+      timeoutDestination: i.timeoutDestination,
+      invalidDestination: i.invalidDestination ?? null, directDial: i.directDial,
+    };
+    setForm(f); setOriginal(f); setError(null);
+  }
+  function cancel() { setEditing(null); setForm(empty()); setOriginal(null); setError(null); }
+  function duplicate(i: Ivr) {
+    const f = {
+      name: `${i.name} (copy)`, number: i.number ?? '', greetingPromptId: i.greetingPromptId,
+      timeoutSeconds: i.timeoutSeconds, maxRetries: i.maxRetries,
+      options: i.options.map((o) => ({ digit: o.digit, destination: o.destination })),
+      timeoutDestination: i.timeoutDestination,
+      invalidDestination: i.invalidDestination ?? null, directDial: i.directDial,
+    };
+    setEditing(null);
+    setForm(f);
+    setOriginal(null);
+    toast.push('Duplicated — adjust and save', 'info');
+  }
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = ivrs ?? [];
+    if (!q) return list;
+    return list.filter((i: Ivr) => `${i.name} ${i.number ?? ''}`.toLowerCase().includes(q));
+  }, [ivrs, search]);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">IVRs</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold">IVRs</h1>
+          <p className="section-desc">Automated phone menus and greetings.</p>
+        </div>
+        {dirty && <span className="badge badge-warning"><span className="dirty-dot" />Unsaved changes</span>}
+      </div>
       {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
         <div className="card-header">
-          <span className="font-medium">{editing ? 'Edit IVR' : 'New IVR'}</span>
-          {editing && <button className="btn btn-ghost" onClick={() => { setEditing(null); setForm(empty()); }}>Cancel</button>}
+          <span className="font-medium">{editing ? `Edit IVR ${form.name}` : 'New IVR'}</span>
+          {editing && <button className="btn btn-ghost" onClick={cancel}>Cancel</button>}
         </div>
         <div className="card-body space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -136,35 +189,40 @@ export function IvrsPage() {
             )}
           </div>
 
-          <button className="btn btn-primary" disabled={create.isPending || update.isPending} onClick={() => (editing ? update.mutate() : create.mutate())}>
-            {editing ? 'Save changes' : 'Add IVR'}
-          </button>
+          <div className="save-bar">
+            <button className="btn btn-primary" disabled={create.isPending || update.isPending} onClick={() => (editing ? update.mutate() : create.mutate())}>
+              {editing ? 'Save changes' : 'Add IVR'}
+            </button>
+            {dirty && <span className="text-xs text-[var(--muted)]">Unsaved changes</span>}
+          </div>
         </div>
       </div>
 
       <div className="card">
-        <div className="card-header"><span className="font-medium">Existing IVRs</span><span className="badge">{(ivrs ?? []).length}</span></div>
+        <div className="card-header">
+          <span className="font-medium">Existing IVRs</span>
+          <div className="flex items-center gap-2">
+            <input className="input" style={{ width: 220 }} placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <span className="badge">{(ivrs ?? []).length}</span>
+          </div>
+        </div>
         <div className="card-body">
-          {(ivrs ?? []).length === 0 ? <div className="empty">No IVRs yet.</div> : (
+          {(ivrs ?? []).length === 0 ? (
+            <EmptyState title="No IVRs yet" hint="Create one above." />
+          ) : filtered.length === 0 ? (
+            <EmptyState title="No matches" hint="Try a different search." />
+          ) : (
             <ul className="space-y-2">
-              {(ivrs ?? []).map((i: Ivr) => (
-                <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
+              {filtered.map((i: Ivr) => (
+                <li key={i.id} className={`flex flex-wrap items-center justify-between gap-3 rounded border p-3 ${editing === i.id ? 'border-[var(--accent)] bg-[var(--accent-soft)]' : 'border-[var(--border)] bg-[var(--panel-2)]'}`}>
                   <div>
                     <div className="font-medium">{i.name}{i.number ? ` — ${i.number}` : ''}</div>
                     <div className="text-xs text-[var(--muted)]">{i.options.length} options · timeout {i.timeoutSeconds}s · {i.directDial ? 'direct dial' : ''}</div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="btn btn-ghost" onClick={() => {
-                      setEditing(i.id);
-                      setForm({
-                        name: i.name, number: i.number ?? '', greetingPromptId: i.greetingPromptId,
-                        timeoutSeconds: i.timeoutSeconds, maxRetries: i.maxRetries,
-                        options: i.options.map((o) => ({ digit: o.digit, destination: o.destination })),
-                        timeoutDestination: i.timeoutDestination,
-                        invalidDestination: i.invalidDestination ?? null, directDial: i.directDial,
-                      });
-                    }}>Edit</button>
-                    <button className="btn btn-danger" onClick={() => remove.mutate(i.id)}>Delete</button>
+                    <button className="btn btn-ghost" onClick={() => startEdit(i as Ivr)}>Edit</button>
+                    <button className="btn btn-ghost" onClick={() => duplicate(i as Ivr)}>Duplicate</button>
+                    <button className="btn btn-danger" onClick={() => { if (window.confirm(`Delete IVR ${i.name}?`)) remove.mutate(i.id); }}>Delete</button>
                   </div>
                 </li>
               ))}

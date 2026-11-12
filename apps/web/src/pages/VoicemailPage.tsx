@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { EmptyState } from '../components/EmptyState';
 
 export function VoicemailPage() {
   const { data: exts } = useQuery({ queryKey: ['extensions'], queryFn: api.extensions });
@@ -10,12 +11,15 @@ export function VoicemailPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">Voicemail</h1>
+      <div>
+        <h1 className="text-3xl font-extrabold">Voicemail</h1>
+        <p className="section-desc">Mailboxes for voicemail-enabled extensions.</p>
+      </div>
       <div className="card">
         <div className="card-header"><span className="font-medium">Mailboxes</span><span className="badge">{vmExts.length}</span></div>
         <div className="card-body">
           {vmExts.length === 0 ? (
-            <div className="empty">No voicemail-enabled extensions. Enable voicemail on an extension.</div>
+            <EmptyState title="No voicemail-enabled extensions" hint="Enable voicemail on an extension." />
           ) : (
             <ul className="space-y-2">
               {vmExts.map((e) => (

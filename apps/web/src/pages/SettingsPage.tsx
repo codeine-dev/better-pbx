@@ -3,16 +3,18 @@ import { useEffect, useState } from 'react';
 import type { Settings } from '@better-pbx/shared';
 import { COUNTRIES } from '@better-pbx/shared';
 import { api } from '../lib/api';
+import { useToast } from '../components/Toast';
 
 export function SettingsPage() {
   const qc = useQueryClient();
+  const toast = useToast();
   const { data } = useQuery({ queryKey: ['settings'], queryFn: api.settings });
   const { data: mcp } = useQuery({ queryKey: ['mcp-status'], queryFn: api.mcpStatus });
   const { data: tls, refetch: refetchTls } = useQuery({ queryKey: ['tls-status'], queryFn: api.tlsStatus });
   const { data: tlsCert, refetch: refetchTlsCert } = useQuery({ queryKey: ['tls-cert'], queryFn: api.tlsCertificate, enabled: !!tls?.hasCert });
   const [form, setForm] = useState<Settings | null>(null);
+  const [original, setOriginal] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [certPem, setCertPem] = useState('');
   const [keyPem, setKeyPem] = useState('');
   const [acmeChallenge, setAcmeChallenge] = useState('http-01');
@@ -25,7 +27,10 @@ export function SettingsPage() {
 
 
   useEffect(() => {
-    if (data) setForm(data);
+    if (data) {
+      setForm(data);
+      setOriginal(data);
+    }
   }, [data]);
 
   const save = useMutation({
@@ -35,25 +40,36 @@ export function SettingsPage() {
     },
     onSuccess: () => {
       setError(null);
-      setSaved(true);
+      if (form) setOriginal(form);
+      toast.push('Settings saved', 'success');
       void qc.invalidateQueries({ queryKey: ['settings'] });
     },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
 
+  const dirty = form !== null && original !== null && JSON.stringify(form) !== JSON.stringify(original);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
+
   if (!form) return <div className="text-[var(--muted)]">Loading…</div>;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">Settings</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold">Settings</h1>
+          <p className="section-desc">Region, network, security, voicemail, MCP and TLS.</p>
+        </div>
+        {dirty && <span className="badge badge-warning"><span className="dirty-dot" />Unsaved changes</span>}
+      </div>
       {error && (
         <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">
           {error}
-        </div>
-      )}
-      {saved && (
-        <div className="rounded border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-300">
-          Saved.
         </div>
       )}
 
@@ -554,16 +570,16 @@ headers:
         </div>
       </div>
 
-      <button
-        className="btn btn-primary"
-        disabled={save.isPending}
-        onClick={() => {
-          setSaved(false);
-          save.mutate();
-        }}
-      >
-        Save settings
-      </button>
+      <div className="save-bar">
+        <button
+          className="btn btn-primary"
+          disabled={save.isPending || !dirty}
+          onClick={() => save.mutate()}
+        >
+          Save settings
+        </button>
+        {dirty && <span className="text-xs text-[var(--muted)]">Unsaved changes</span>}
+      </div>
     </div>
   );
 }

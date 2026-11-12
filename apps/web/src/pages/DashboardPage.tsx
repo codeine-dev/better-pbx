@@ -23,9 +23,9 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="page-heading">
+      <div>
         <h1 className="text-3xl font-extrabold">Dashboard</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">Overview of your PBX configuration.</p>
+        <p className="section-desc">Overview of your PBX configuration.</p>
       </div>
       <div className="grid-cards">
         {cards.map((c) => (

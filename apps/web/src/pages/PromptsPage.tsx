@@ -1,13 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Prompt } from '@better-pbx/shared';
 import { api } from '../lib/api';
+import { EmptyState } from '../components/EmptyState';
+import { useToast } from '../components/Toast';
 
 export function PromptsPage() {
   const qc = useQueryClient();
+  const toast = useToast();
   const { data: prompts } = useQuery({ queryKey: ['prompts'], queryFn: api.prompts });
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const invalidate = () => void qc.invalidateQueries({ queryKey: ['prompts'] });
 
@@ -26,19 +30,29 @@ export function PromptsPage() {
       });
       return api.uploadPrompt({ name: name || file.name, originalName: file.name, content });
     },
-    onSuccess: () => { setName(''); if (fileRef.current) fileRef.current.value = ''; setError(null); invalidate(); },
+    onSuccess: () => { toast.push('Prompt uploaded', 'success'); setName(''); if (fileRef.current) fileRef.current.value = ''; setError(null); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => api.deletePrompt(id),
-    onSuccess: () => invalidate(),
+    onSuccess: () => { toast.push('Prompt deleted', 'success'); invalidate(); },
     onError: (e: unknown) => setError(e instanceof Error ? e.message : 'Failed'),
   });
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = prompts ?? [];
+    if (!q) return list;
+    return list.filter((p: Prompt) => `${p.name} ${p.originalName ?? ''}`.toLowerCase().includes(q));
+  }, [prompts, search]);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">Prompts</h1>
+      <div>
+        <h1 className="text-3xl font-extrabold">Prompts</h1>
+        <p className="section-desc">Audio greetings and announcements.</p>
+      </div>
       {error && <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-[var(--danger)]">{error}</div>}
 
       <div className="card">
@@ -51,17 +65,27 @@ export function PromptsPage() {
       </div>
 
       <div className="card">
-        <div className="card-header"><span className="font-medium">Existing prompts</span><span className="badge">{(prompts ?? []).length}</span></div>
+        <div className="card-header">
+          <span className="font-medium">Existing prompts</span>
+          <div className="flex items-center gap-2">
+            <input className="input" style={{ width: 220 }} placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <span className="badge">{(prompts ?? []).length}</span>
+          </div>
+        </div>
         <div className="card-body">
-          {(prompts ?? []).length === 0 ? <div className="empty">No prompts yet.</div> : (
+          {(prompts ?? []).length === 0 ? (
+            <EmptyState title="No prompts yet" hint="Upload an audio file above." />
+          ) : filtered.length === 0 ? (
+            <EmptyState title="No matches" hint="Try a different search." />
+          ) : (
             <ul className="space-y-2">
-              {(prompts ?? []).map((p: Prompt) => (
+              {filtered.map((p: Prompt) => (
                 <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3">
                   <div>
                     <div className="font-medium">{p.name}</div>
                     <div className="text-xs text-[var(--muted)]">{p.kind} · {p.file}{p.originalName ? ` · ${p.originalName}` : ''}</div>
                   </div>
-                  <button className="btn btn-danger" onClick={() => remove.mutate(p.id)}>Delete</button>
+                  <button className="btn btn-danger" onClick={() => { if (window.confirm(`Delete prompt ${p.name}?`)) remove.mutate(p.id); }}>Delete</button>
                 </li>
               ))}
             </ul>

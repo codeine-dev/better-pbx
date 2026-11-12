@@ -2,21 +2,31 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 
-const nav = [
-  { to: '/', label: 'Dashboard', icon: '⌂' },
-  { to: '/extensions', label: 'Extensions', icon: '☎' },
-  { to: '/trunks', label: 'Trunks', icon: '⇄' },
-  { to: '/outbound-routes', label: 'Outbound routes', icon: '↗' },
-  { to: '/inbound-routes', label: 'Inbound routes', icon: '↙' },
-  { to: '/ring-groups', label: 'Ring groups', icon: '○' },
-  { to: '/ivrs', label: 'IVRs', icon: '☰' },
-  { to: '/prompts', label: 'Prompts', icon: '♪' },
-  { to: '/music-on-hold', label: 'Music on hold', icon: '♫' },
-  { to: '/voicemail', label: 'Voicemail', icon: '✉' },
-  { to: '/security', label: 'Security', icon: '🛡' },
-  { to: '/snapshots', label: 'Snapshots', icon: '⟳' },
-  { to: '/logs', label: 'Logs', icon: '≡' },
-  { to: '/settings', label: 'Settings', icon: '⚙' },
+const navGroups = [
+  { title: 'Overview', items: [
+    { to: '/', label: 'Dashboard', icon: '⌂' },
+  ]},
+  { title: 'Telephony', items: [
+    { to: '/extensions', label: 'Extensions', icon: '☎' },
+    { to: '/trunks', label: 'Trunks', icon: '⇄' },
+    { to: '/ring-groups', label: 'Ring groups', icon: '○' },
+    { to: '/ivrs', label: 'IVRs', icon: '☰' },
+    { to: '/voicemail', label: 'Voicemail', icon: '✉' },
+  ]},
+  { title: 'Routing', items: [
+    { to: '/outbound-routes', label: 'Outbound routes', icon: '↗' },
+    { to: '/inbound-routes', label: 'Inbound routes', icon: '↙' },
+  ]},
+  { title: 'Media', items: [
+    { to: '/prompts', label: 'Prompts', icon: '♪' },
+    { to: '/music-on-hold', label: 'Music on hold', icon: '♫' },
+  ]},
+  { title: 'System', items: [
+    { to: '/security', label: 'Security', icon: '🛡' },
+    { to: '/snapshots', label: 'Snapshots', icon: '⟳' },
+    { to: '/logs', label: 'Logs', icon: '≡' },
+    { to: '/settings', label: 'Settings', icon: '⚙' },
+  ]},
 ];
 
 export function Shell({ children }: { children?: React.ReactNode }) {
@@ -47,21 +57,25 @@ export function Shell({ children }: { children?: React.ReactNode }) {
           </div>
         </div>
         <nav className="px-6 pb-6">
-          <div className="sidebar-title">Menu</div>
-          <ul className="space-y-1">
-            {nav.map((item) => (
-              <li key={item.to} className="sidebar-item">
-                <NavLink
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-                >
-                  <span className="w-5 text-center text-base">{item.icon}</span>
-                  <span>{item.label}</span>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <div className="sidebar-title">{group.title}</div>
+              <ul className="space-y-1">
+                {group.items.map((item) => (
+                  <li key={item.to} className="sidebar-item">
+                    <NavLink
+                      to={item.to}
+                      end={item.to === '/'}
+                      className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                    >
+                      <span className="w-5 text-center text-base">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
         <div className="mt-auto border-t border-[var(--border)] p-6">
           <div className="mb-3 px-2 text-xs font-semibold text-[var(--muted)]">{user?.username}</div>

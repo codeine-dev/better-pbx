@@ -51,14 +51,17 @@ export function LogsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-extrabold">Logs</h1>
+        <div>
+          <h1 className="text-3xl font-extrabold">Logs</h1>
+          <p className="section-desc">Live log streaming, including SIP traces.</p>
+        </div>
         <div className="flex items-center gap-3 text-sm">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={live} onChange={(e) => setLive(e.target.checked)} />
             Live
           </label>
           <select
-            className="rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1 text-[var(--text)]"
+            className="select" style={{ width: 140 }}
             value={tail}
             onChange={(e) => setTail(Number(e.target.value))}
           >
@@ -73,7 +76,7 @@ export function LogsPage() {
         {FILES.map((f) => (
           <button
             key={f.id}
-            className={`rounded px-3 py-1 ${file === f.id ? 'bg-emerald-600 text-white' : 'bg-[var(--panel-2)] text-[var(--text)] border border-[var(--border)]'}`}
+            className={`btn ${file === f.id ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setFile(f.id)}
           >
             {f.label}
@@ -86,7 +89,7 @@ export function LogsPage() {
           <div className="flex flex-wrap items-center gap-3 rounded border border-[var(--border)] bg-[var(--panel-2)] p-3 text-sm">
             <span>SIP tracing: {traceStatus?.enabled ? 'ON' : 'OFF'}</span>
             <button
-              className={`rounded px-3 py-1 ${traceStatus?.enabled ? 'bg-rose-600' : 'bg-emerald-600'} text-white`}
+              className={`btn ${traceStatus?.enabled ? 'btn-danger' : 'btn-primary'}`}
               onClick={() => toggleTrace.mutate(!traceStatus?.enabled)}
               disabled={toggleTrace.isPending}
             >

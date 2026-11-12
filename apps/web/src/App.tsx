@@ -20,6 +20,7 @@ import { SecurityPage } from './pages/SecurityPage';
 import { SnapshotsPage } from './pages/SnapshotsPage';
 import { LogsPage } from './pages/LogsPage';
 import { Shell } from './components/Shell';
+import { ToastProvider } from './components/Toast';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ function SetupGuard({ children }: { children: React.ReactNode }) {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -86,6 +88,7 @@ export function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }
